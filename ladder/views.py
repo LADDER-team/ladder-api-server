@@ -8,6 +8,8 @@ from rest_framework.response import Response
 from rest_framework.exceptions import ValidationError
 from django.shortcuts import render
 from rest_framework.decorators import action
+from django.utils import timezone
+from datetime import timedelta
 
 
 class IsOwnerOrReadOnly(permissions.BasePermission):
@@ -63,6 +65,16 @@ class LadderViewSet(viewsets.ModelViewSet,permissions.BasePermission):
         for ladder in Ladder.objects.all():
             ladder_info = {'id':ladder.pk,'LearningNumber':ladder.count_learning_number()}
             ladder_list.append(ladder_info)
+
+        return Response(sorted(ladder_list,key=lambda x: x['LearningNumber'],reverse=True)[:5])
+
+    @action(methods=['get'],detail=False)
+    def trend(self,request):
+        ladder_list = []
+        for ls in LearningStatus.objects.all().filter(update_at__gte=timezone.now()-timedelta(7)):
+            ladder_info = {'id':ls.unit.ladder.pk,'LearningNumber':ls.unit.ladder.count_learning_number()}
+            if ladder_info not in ladder_list:
+                ladder_list.append(ladder_info)
 
         return Response(sorted(ladder_list,key=lambda x: x['LearningNumber'],reverse=True)[:5])
 

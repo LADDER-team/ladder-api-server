@@ -17,9 +17,13 @@ class UnitAdmin(admin.ModelAdmin):
 class LinkAdmin(admin.ModelAdmin):
     list_display = ('latter','prior','user')
 
+
+class LearningStatusAdmin(admin.ModelAdmin):
+    list_display = ('user','unit','status','created_at','update_at')
+
 admin.site.register(Tags)
 admin.site.register(User,UserAdmin)
 admin.site.register(Ladder,LadderAdmin)
 admin.site.register(Unit,UnitAdmin)
 admin.site.register(Link,LinkAdmin)
-admin.site.register(LearningStatus)
+admin.site.register(LearningStatus,LearningStatusAdmin)

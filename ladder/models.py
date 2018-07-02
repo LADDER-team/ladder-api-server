@@ -226,6 +226,7 @@ class LearningStatus(models.Model):
     unit = models.ForeignKey(Unit,verbose_name='ユニット',on_delete=models.CASCADE)
     status = models.BooleanField('学習状態')
     created_at = models.DateTimeField('作成日',default=timezone.now)
+    update_at = models.DateTimeField('更新日',auto_now=True)
 
     def __unicode__(self):
         return self.user.name+' '+self.unit.title
