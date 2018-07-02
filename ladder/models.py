@@ -173,15 +173,8 @@ class Ladder(models.Model):
 
     def count_learning_number(self):
         units_list = self.get_unit()
-        try:
-            first_unit = units_list[0]
-            last_unit = units_list[-1]
-            count = 0
-            for first_ladder,last_ladder in zip(LearningStatus.objects.filter(unit=first_unit),LearningStatus.objects.filter(unit=last_unit)):
-                count += (first_ladder.status - last_ladder.status)
-            return count
-        except:
-            return 0
+        first_unit = units_list[0]
+        return LearningStatus.objects.all().filter(unit=first_unit).count()
 
 
 class Unit(models.Model):
