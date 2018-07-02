@@ -102,9 +102,7 @@ class User(AbstractBaseUser, PermissionsMixin):
 
     def get_my_link(self):
         link_list = []
-        for peg in Link.objects.filter(user=self):
-            link_list.append(peg.latter)
-        return link_list
+        return Link.objects.filter(user=self)
 
     def get_my_ladders(self):
         ladders_list = []
@@ -141,7 +139,7 @@ class Ladder(models.Model):
         units_list = []
         for unit in Unit.objects.filter(ladder=self):
             units_list.append(unit)
-            units_list.sort(key=operator.attrgetter('index'))
+        units_list.sort(key=operator.attrgetter('index'))
         return units_list
 
     def get_recommended_prev_ladder(self):

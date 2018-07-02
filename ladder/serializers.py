@@ -41,7 +41,7 @@ class UserSerializer(serializers.ModelSerializer):
         serialize = {}
         list = []
         for ladder in instance.get_my_link():
-            serialize = {'id':ladder.pk,'title':ladder.title,'tags':ladder.tags.name,'creater':ladder.creater.name,'created_at':ladder.created_at}
+            serialize = {'id':ladder.pk,'latter':ladder.latter.pk,'prior':ladder.prior.pk}
             list.append(serialize)
         return list
 

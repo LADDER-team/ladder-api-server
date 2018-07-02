@@ -7,6 +7,7 @@ from rest_framework.authentication import BasicAuthentication,TokenAuthenticatio
 from rest_framework.response import Response
 from rest_framework.exceptions import ValidationError
 from django.shortcuts import render
+from rest_framework.decorators import action
 
 
 class IsOwnerOrReadOnly(permissions.BasePermission):
@@ -56,10 +57,18 @@ class LadderViewSet(viewsets.ModelViewSet,permissions.BasePermission):
 
         return Response(serializer.data)
 
+    @action(methods=['get'],detail=False)
+    def ranking(self,request):
+        ladder_list = []
+        for ladder in Ladder.objects.all():
+            ladder_info = {'id':ladder.pk,'LearningNumber':ladder.count_learning_number()}
+            ladder_list.append(ladder_info)
+
+        return Response(sorted(ladder_list,key=lambda x: x['LearningNumber'],reverse=True)[:5])
 
 
 class UserViewSet(viewsets.ModelViewSet):
-    queryset = User.objects.all()
+    queryset = User.objects.all().filter(is_active=True)
     serializer_class = UserSerializer
 
     def get_permissions(self):
