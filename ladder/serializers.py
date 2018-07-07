@@ -20,7 +20,7 @@ class UserSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = User
-        fields = ('name','email','icon','profile','my_link','my_ladders','password')
+        fields = ('id','name','email','icon','profile','my_link','my_ladders','password')
         extra_kwargs = {'password':{'write_only':True}}
 
     def create(self,validated_data):
@@ -41,7 +41,7 @@ class UserSerializer(serializers.ModelSerializer):
         serialize = {}
         list = []
         for ladder in instance.get_my_link():
-            serialize = {'title':ladder.title,'tags':ladder.tags.name,'creater':ladder.creater.name,'created_at':ladder.created_at}
+            serialize = {'id':ladder.pk,'latter':ladder.latter.pk,'prior':ladder.prior.pk}
             list.append(serialize)
         return list
 
@@ -49,7 +49,7 @@ class UserSerializer(serializers.ModelSerializer):
         serialize = {}
         list = []
         for ladder in instance.get_my_ladders():
-            serialize = {'title':ladder.title,'tags':ladder.tags.name,'creater':ladder.creater.name,'created_at':ladder.created_at}
+            serialize = {'id':ladder.pk,'title':ladder.title,'tags':ladder.tags.name,'creater':ladder.creater.name,'created_at':ladder.created_at}
             list.append(serialize)
         return list
 
@@ -71,21 +71,21 @@ class LadderSerializer(serializers.ModelSerializer):
         serialize ={}
         list = []
         for unit in instance.get_unit():
-            serialize = {'title':unit.title,'description':unit.description,'ladder':unit.ladder.title,'url':unit.url,'index':unit.index}
+            serialize = {'id':unit.pk,'title':unit.title,'description':unit.description,'ladder':unit.ladder.title,'url':unit.url,'index':unit.index}
             list.append(serialize)
         return list
 
     def get_recommended_prev_ladder(self,instance):
         ladder = instance.get_recommended_prev_ladder()
         if ladder:
-            return {'title':ladder.title,'tags':ladder.tags.name,'creater':ladder.creater.name,'created_at':ladder.created_at}
+            return {'id':ladder.pk,'title':ladder.title,'tags':ladder.tags.name,'creater':ladder.creater.name,'created_at':ladder.created_at}
         else:
             return None
 
     def get_recommended_next_ladder(self,instance):
         ladder = instance.get_recommended_next_ladder()
         if ladder:
-            return {'title':ladder.title,'tags':ladder.tags.name,'creater':ladder.creater.name,'created_at':ladder.created_at}
+            return {'id':ladder.pk,'title':ladder.title,'tags':ladder.tags.name,'creater':ladder.creater.name,'created_at':ladder.created_at}
         else:
             return None
 
@@ -100,18 +100,18 @@ class UnitSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Unit
-        fields = ('title','description','ladder','url','index')
+        fields = ('id','title','description','ladder','url','index')
 
 
 class LinkSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Link
-        fields = ('prior','latter','user')
+        fields = ('id','prior','latter','user')
 
 
 class LearningStatusSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = LearningStatus
-        fields = ('user','unit','status','created_at')
+        fields = ('id','user','unit','status','created_at')
