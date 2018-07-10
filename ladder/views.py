@@ -21,11 +21,11 @@ class IsOwnerOrReadOnly(permissions.BasePermission):
 
 
 class LadderFilter(filters.FilterSet):
-    creater = filters.CharFilter(name='creater',lookup_expr='exact')
+    tags = filters.ModelMultipleChoiceFilter(queryset=Tags.objects.all())
 
     class Meta:
         model = Ladder
-        fields = ['creater']
+        fields = ['tags']
 
 
 class LadderViewSet(viewsets.ModelViewSet,permissions.BasePermission):
