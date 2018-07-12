@@ -50,7 +50,7 @@ class LadderViewSet(viewsets.ModelViewSet,permissions.BasePermission):
         add_data['creater'] = request.user.pk
         partial = kwargs.pop('partial', False)
         instance = self.get_object()
-        serializer = self.get_serializer(instance, data=add_data, partial=partial)
+        serializer = self.get_serializer(instance, data=add_data, partial=True)
         serializer.is_valid(raise_exception=True)
         self.perform_update(serializer)
 
@@ -130,7 +130,7 @@ class LinkViewSet(viewsets.ModelViewSet):
         add_data['user'] = request.user.pk
         partial = kwargs.pop('partial', False)
         instance = self.get_object()
-        serializer = self.get_serializer(instance, data=add_data, partial=partial)
+        serializer = self.get_serializer(instance, data=add_data, partial=True)
         serializer.is_valid(raise_exception=True)
         self.perform_update(serializer)
 
@@ -161,7 +161,7 @@ class LearningStatusViewSet(viewsets.ModelViewSet):
         add_data['user'] = request.user.pk
         partial = kwargs.pop('partial', False)
         instance = self.get_object()
-        serializer = self.get_serializer(instance, data=add_data, partial=partial)
+        serializer = self.get_serializer(instance, data=add_data, partial=True)
         serializer.is_valid(raise_exception=True)
         self.perform_update(serializer)
 
@@ -189,7 +189,7 @@ class CommentViewSet(viewsets.ModelViewSet):
         add_data['user'] = request.user.pk
         partial = kwargs.pop('partial', False)
         instance = self.get_object()
-        serializer = self.get_serializer(instance, data=add_data, partial=partial)
+        serializer = self.get_serializer(instance, data=add_data, partial=True)
         serializer.is_valid(raise_exception=True)
         self.perform_update(serializer)
 
