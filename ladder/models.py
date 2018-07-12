@@ -172,10 +172,12 @@ class Ladder(models.Model):
             return 0
 
     def count_learning_number(self):
-        units_list = self.get_unit()
-        first_unit = units_list[0]
-        return LearningStatus.objects.all().filter(unit=first_unit).count()
-
+        try:
+            units_list = self.get_unit()
+            first_unit = units_list[0]
+            return LearningStatus.objects.all().filter(unit=first_unit).count()
+        except:
+            return 0;
 
 class Unit(models.Model):
     """ユニット"""
