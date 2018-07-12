@@ -102,9 +102,7 @@ class User(AbstractBaseUser, PermissionsMixin):
 
     def get_my_link(self):
         link_list = []
-        for peg in Link.objects.filter(user=self):
-            link_list.append(peg.latter)
-        return link_list
+        return Link.objects.filter(user=self)
 
     def get_my_ladders(self):
         ladders_list = []
@@ -115,6 +113,10 @@ class User(AbstractBaseUser, PermissionsMixin):
     @property
     def username(self):
         return self.email
+
+    @property
+    def creater(self):
+        return self
 
 
 class Ladder(models.Model):
@@ -137,7 +139,7 @@ class Ladder(models.Model):
         units_list = []
         for unit in Unit.objects.filter(ladder=self):
             units_list.append(unit)
-            units_list.sort(key=operator.attrgetter('index'))
+        units_list.sort(key=operator.attrgetter('index'))
         return units_list
 
     def get_recommended_prev_ladder(self):
@@ -170,17 +172,12 @@ class Ladder(models.Model):
             return 0
 
     def count_learning_number(self):
-        units_list = self.get_unit()
         try:
+            units_list = self.get_unit()
             first_unit = units_list[0]
-            last_unit = units_list[-1]
-            count = 0
-            for first_ladder,last_ladder in zip(LearningStatus.objects.filter(unit=first_unit),LearningStatus.objects.filter(unit=last_unit)):
-                count += (first_ladder.status - last_ladder.status)
-            return count
+            return LearningStatus.objects.all().filter(unit=first_unit).count()
         except:
-            return 0
-
+            return 0;
 
 class Unit(models.Model):
     """ユニット"""
@@ -196,14 +193,15 @@ class Unit(models.Model):
     def __str__(self):
         return self.title
 
+    @property
     def creater(self):
         return self.ladder.creater
 
 
 class Link(models.Model):
     """リンク"""
-    prior = models.ForeignKey(Ladder,'前のラダー',related_name='prior_ladder')
-    latter = models.ForeignKey(Ladder,'次のラダー',related_name='latter_ladder')
+    prior = models.ForeignKey(Ladder,related_name='prior_ladder',on_delete=models.CASCADE)
+    latter = models.ForeignKey(Ladder,related_name='latter_ladder',on_delete=models.CASCADE)
     user = models.ForeignKey(settings.AUTH_USER_MODEL,'ユーザー')
 
     def __unicode__(self):
@@ -212,6 +210,7 @@ class Link(models.Model):
     def __str__(self):
         return self.latter.title
 
+    @property
     def creater(self):
         return self.user
 
@@ -222,6 +221,7 @@ class LearningStatus(models.Model):
     unit = models.ForeignKey(Unit,verbose_name='ユニット',on_delete=models.CASCADE)
     status = models.BooleanField('学習状態')
     created_at = models.DateTimeField('作成日',default=timezone.now)
+    update_at = models.DateTimeField('更新日',auto_now=True)
 
     def __unicode__(self):
         return self.user.name+' '+self.unit.title
@@ -229,5 +229,6 @@ class LearningStatus(models.Model):
     def __str__(self):
         return self.user.name+' '+self.unit.title
 
+    @property
     def creater(self):
         return self.user
