@@ -11,7 +11,7 @@ class LadderAdmin(admin.ModelAdmin):
 
 
 class UnitAdmin(admin.ModelAdmin):
-    list_display = ('title','index','ladder','url','get_comments')
+    list_display = ('id','title','index','ladder','url','get_comments')
 
 
 class LinkAdmin(admin.ModelAdmin):
