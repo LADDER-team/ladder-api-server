@@ -1,6 +1,6 @@
 from rest_framework import status,viewsets,filters,permissions,authentication
-from .models import Tags,User,Ladder,Unit,Link,LearningStatus
-from .serializers import TagsSerializer,LadderSerializer,UserSerializer,UnitSerializer,LinkSerializer,LearningStatusSerializer
+from .models import Tags,User,Ladder,Unit,Link,LearningStatus,Comment
+from .serializers import TagsSerializer,LadderSerializer,UserSerializer,UnitSerializer,LinkSerializer,LearningStatusSerializer,CommentSerializer
 from django_filters import rest_framework as filters
 from rest_framework.permissions import IsAuthenticatedOrReadOnly,IsAuthenticated,AllowAny,IsAdminUser
 from rest_framework.authentication import BasicAuthentication,TokenAuthentication
@@ -169,6 +169,36 @@ class LearningStatusViewSet(viewsets.ModelViewSet):
             instance._prefetched_objects_cache = {}
 
         return Response(serializer.data)
+
+class CommentViewSet(viewsets.ModelViewSet):
+    queryset = Comment.objects.all()
+    serializer_class = CommentSerializer
+    permission_classes = (IsAuthenticatedOrReadOnly,IsOwnerOrReadOnly)
+
+    def create(self, request, *args, **kwargs):
+        add_data = request.data.copy()
+        add_data['user'] = request.user.pk
+        serializer = self.get_serializer(data=add_data)
+        serializer.is_valid(raise_exception=True)
+        self.perform_create(serializer)
+        headers = self.get_success_headers(serializer.data)
+        return Response(serializer.data, status=status.HTTP_201_CREATED, headers=headers)
+
+    def update(self, request, *args, **kwargs):
+        add_data = request.data.copy()
+        add_data['user'] = request.user.pk
+        partial = kwargs.pop('partial', False)
+        instance = self.get_object()
+        serializer = self.get_serializer(instance, data=add_data, partial=partial)
+        serializer.is_valid(raise_exception=True)
+        self.perform_update(serializer)
+
+        if getattr(instance, '_prefetched_objects_cache', None):
+            instance._prefetched_objects_cache = {}
+
+        return Response(serializer.data)
+
+
 
 def index(request):
     return render(request, 'index.html', {})

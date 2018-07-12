@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from .models import Tags,Ladder,Unit,User,Link,LearningStatus
+from .models import Tags,Ladder,Unit,User,Link,LearningStatus,Comment
 from django.contrib.auth.hashers import make_password
 
 
@@ -103,9 +103,21 @@ class LadderSerializer(serializers.ModelSerializer):
 
 class UnitSerializer(serializers.ModelSerializer):
 
+    comments = serializers.SerializerMethodField()
+
     class Meta:
         model = Unit
-        fields = ('id','title','description','ladder','url','index')
+        fields = ('id','title','description','ladder','url','index','comments')
+        extra_kwargs = {'comments':{'write_only':True}}
+
+    def get_comments(self,instace):
+        comments = instace.get_comments()
+        if comments:
+            list = []
+            for comment in comments:
+                list.append(comment.pk)
+            return list
+
 
 
 class LinkSerializer(serializers.ModelSerializer):
@@ -120,3 +132,10 @@ class LearningStatusSerializer(serializers.ModelSerializer):
     class Meta:
         model = LearningStatus
         fields = ('id','user','unit','status','created_at')
+
+
+class CommentSerializer(serializers.ModelSerializer):
+
+    class Meta:
+        model = Comment
+        fields = ('id','unit','user','text','target','created_at')

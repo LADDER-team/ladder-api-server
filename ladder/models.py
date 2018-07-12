@@ -197,6 +197,9 @@ class Unit(models.Model):
     def creater(self):
         return self.ladder.creater
 
+    def get_comments(self):
+        return self.comment_set.all()
+
 
 class Link(models.Model):
     """リンク"""
@@ -228,6 +231,25 @@ class LearningStatus(models.Model):
 
     def __str__(self):
         return self.user.name+' '+self.unit.title
+
+    @property
+    def creater(self):
+        return self.user
+
+
+class Comment(models.Model):
+    """コメント"""
+    unit = models.ForeignKey(Unit,verbose_name='ユニット',on_delete=models.CASCADE)
+    user = models.ForeignKey(User,verbose_name='ユーザー',on_delete=models.CASCADE)
+    text = models.TextField('コメント')
+    target = models.ForeignKey('self',verbose_name='親コメント',null=True,on_delete=models.CASCADE)
+    created_at = models.DateTimeField('投稿日',default=timezone.now)
+
+    def ___unicode__(self):
+        return str(self.unit.pk)+' '+str(self.pk)
+
+    def __str__(self):
+        return str(self.unit.pk)+' '+str(self.pk)
 
     @property
     def creater(self):
