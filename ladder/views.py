@@ -35,8 +35,6 @@ class LadderViewSet(viewsets.ModelViewSet,permissions.BasePermission):
     permission_classes = (IsOwnerOrReadOnly,)
 
     def create(self, request, *args, **kwargs):
-        if {'title':request.data['title']} in Ladder.objects.filter(creater=request.user.pk).values('title'):
-            raise ValidationError('同じタイトルのLADDERが投稿されています')
         add_data = request.data.copy()
         add_data['creater'] = request.user.pk
         serializer = self.get_serializer(data=add_data)
@@ -115,8 +113,6 @@ class LinkViewSet(viewsets.ModelViewSet):
     permission_classes = (IsOwnerOrReadOnly,)
 
     def create(self, request, *args, **kwargs):
-        if {'latter':int(request.data['latter'])} in Link.objects.filter(user=request.user.pk).values('latter'):
-            raise ValidationError('既にこのLADDERはペグされています')
         add_data = request.data.copy()
         add_data['user'] = request.user.pk
         serializer = self.get_serializer(data=add_data)
@@ -146,8 +142,6 @@ class LearningStatusViewSet(viewsets.ModelViewSet):
     permission_classes = (IsAuthenticatedOrReadOnly,IsOwnerOrReadOnly)
 
     def create(self, request, *args, **kwargs):
-        if {'unit':int(request.data['unit'])} in LearningStatus.objects.filter(user=request.user.pk).values('unit'):
-            raise ValidationError('同じタイトルのLADDERが投稿されています')
         add_data = request.data.copy()
         add_data['user'] = request.user.pk
         serializer = self.get_serializer(data=add_data)

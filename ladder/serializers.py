@@ -59,9 +59,18 @@ class UserSerializer(serializers.ModelSerializer):
         return list
 
 
+class UnitSerializer(serializers.ModelSerializer):
+
+    class Meta:
+        model = Unit
+        fields = ('id','title','description','ladder','url','index')
+        extra_kwargs = {'ladder':{'read_only':True}}
+
+
 class LadderSerializer(serializers.ModelSerializer):
 
-    unit = serializers.SerializerMethodField()
+    units = UnitSerializer(many=True)
+
     recommended_prev_ladder = serializers.SerializerMethodField()
     recommended_next_ladder = serializers.SerializerMethodField()
     count_finish_number = serializers.SerializerMethodField()
@@ -70,15 +79,15 @@ class LadderSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Ladder
-        fields = ('id','title','tags','is_public','creater','created_at','update_at','unit','recommended_prev_ladder','recommended_next_ladder','count_learning_number','count_finish_number')
+        fields = ('id','title','tags','is_public','creater','created_at','update_at','units','recommended_prev_ladder','recommended_next_ladder','count_learning_number','count_finish_number')
 
-    def get_unit(self,instance):
-        serialize ={}
-        list = []
-        for unit in instance.get_unit():
-            serialize = {'id':unit.pk,'title':unit.title,'description':unit.description,'ladder':unit.ladder.title,'url':unit.url,'index':unit.index}
-            list.append(serialize)
-        return list
+    def create(self, validated_data):
+        units_data = validated_data.pop('units')
+        ladder = Ladder.objects.create(**validated_data)
+        for unit_data in units_data:
+            Unit.objects.create(ladder=ladder,**unit_data)
+        return ladder
+
 
     def get_recommended_prev_ladder(self,instance):
         ladder = instance.get_recommended_prev_ladder()
@@ -99,13 +108,6 @@ class LadderSerializer(serializers.ModelSerializer):
 
     def get_count_learning_number(self,instance):
         return instance.count_learning_number()
-
-
-class UnitSerializer(serializers.ModelSerializer):
-
-    class Meta:
-        model = Unit
-        fields = ('id','title','description','ladder','url','index')
 
 
 class LinkSerializer(serializers.ModelSerializer):
