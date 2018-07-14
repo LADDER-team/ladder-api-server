@@ -106,7 +106,7 @@ class User(AbstractBaseUser, PermissionsMixin):
 
     def get_my_ladders(self):
         ladders_list = []
-        for ladder in Ladder.objects.filter(creater=self):
+        for ladder in Ladder.objects.filter(user=self):
             ladders_list.append(ladder)
         return ladders_list
 
@@ -114,22 +114,18 @@ class User(AbstractBaseUser, PermissionsMixin):
     def username(self):
         return self.email
 
-    @property
-    def creater(self):
-        return self
-
 
 class Ladder(models.Model):
     """ラダー"""
     title = models.CharField('タイトル',max_length=50)
     #tags = models.ManyToManyField(Tags,blank=True,verbose_name='タグ')
-    creater = models.ForeignKey(settings.AUTH_USER_MODEL,verbose_name='投稿者',on_delete=models.CASCADE)
+    user = models.ForeignKey(settings.AUTH_USER_MODEL,verbose_name='投稿者',on_delete=models.CASCADE)
     created_at = models.DateTimeField('作成日',auto_now_add=True)
     update_at = models.DateTimeField('更新日',auto_now=True)
     is_public = models.BooleanField('公開設定',default=True)
 
     class Meta:
-        unique_together = ('creater','title')
+        unique_together = ('user','title')
 
 
     def __unicode__(self):
@@ -200,11 +196,11 @@ class Unit(models.Model):
         return self.title
 
     @property
-    def creater(self):
-        return self.ladder.creater
+    def user(self):
+        return self.ladder.user
 
     def get_comments(self):
-        return self.comment_set.all()
+        return Comment.objects.filter(unit=self)
 
 
 class Link(models.Model):
@@ -222,10 +218,6 @@ class Link(models.Model):
 
     def __str__(self):
         return self.latter.title
-
-    @property
-    def creater(self):
-        return self.user
 
 
 class LearningStatus(models.Model):
@@ -246,26 +238,17 @@ class LearningStatus(models.Model):
     def __str__(self):
         return self.user.name+' '+self.unit.title
 
-    @property
-    def creater(self):
-        return self.user
-
 
 class Comment(models.Model):
     """コメント"""
     unit = models.ForeignKey(Unit,verbose_name='ユニット',on_delete=models.CASCADE)
-    user = models.ForeignKey(User,verbose_name='ユーザー',on_delete=models.CASCADE)
+    user = models.ForeignKey(settings.AUTH_USER_MODEL,verbose_name='ユーザー',on_delete=models.CASCADE)
     text = models.TextField('コメント')
-
-    target = models.ForeignKey('self',verbose_name='親コメント',null=True,blank=True,on_delete=models.CASCADE)
+    target = models.ForeignKey('self',verbose_name='親コメント',null=True,on_delete=models.CASCADE)
     created_at = models.DateTimeField('投稿日',default=timezone.now)
 
     def ___unicode__(self):
-        return str(self.unit.pk)+' '+str(self.pk)
+        return str(self.unit.pk)+(self.pk)
 
     def __str__(self):
         return str(self.unit.pk)+' '+str(self.pk)
-
-    @property
-    def creater(self):
-        return self.user

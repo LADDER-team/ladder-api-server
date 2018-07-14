@@ -7,7 +7,7 @@ class UserAdmin(admin.ModelAdmin):
 
 
 class LadderAdmin(admin.ModelAdmin):
-    list_display = ('id','title','creater','is_public','get_unit','get_recommended_next_ladder','get_recommended_prev_ladder','count_finish_number','count_learning_number')
+    list_display = ('id','title','user','is_public','get_unit','get_recommended_next_ladder','get_recommended_prev_ladder','count_finish_number','count_learning_number')
 
 
 class UnitAdmin(admin.ModelAdmin):
@@ -26,7 +26,6 @@ class CommentAdmin(admin.ModelAdmin):
     list_display = ('id','unit','user','text')
 
 #admin.site.register(Tags)
-
 admin.site.register(User,UserAdmin)
 admin.site.register(Ladder,LadderAdmin)
 admin.site.register(Unit,UnitAdmin)

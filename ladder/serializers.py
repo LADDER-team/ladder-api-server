@@ -55,7 +55,7 @@ class UserSerializer(serializers.ModelSerializer):
         serialize = {}
         list = []
         for ladder in instance.get_my_ladders():
-            serialize = {'id':ladder.pk,'title':ladder.title,'creater':ladder.creater.name,'created_at':ladder.created_at}
+            serialize = {'id':ladder.pk,'title':ladder.title,'user':ladder.user.name,'created_at':ladder.created_at}
             list.append(serialize)
         return list
 
@@ -70,7 +70,7 @@ class UnitSerializer(serializers.ModelSerializer):
 
 class LadderSerializer(serializers.ModelSerializer):
 
-    units = UnitSerializer(many=True)
+    units = UnitSerializer(many=True,read_only=True)
 
     recommended_prev_ladder = serializers.SerializerMethodField()
     recommended_next_ladder = serializers.SerializerMethodField()
@@ -80,7 +80,7 @@ class LadderSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Ladder
-        fields = ('id','title','is_public','creater','created_at','update_at','units','recommended_prev_ladder','recommended_next_ladder','count_learning_number','count_finish_number')
+        fields = ('id','title','is_public','user','created_at','update_at','units','recommended_prev_ladder','recommended_next_ladder','count_learning_number','count_finish_number')
 
     def create(self, validated_data):
         units_data = validated_data.pop('units')
@@ -93,14 +93,14 @@ class LadderSerializer(serializers.ModelSerializer):
     def get_recommended_prev_ladder(self,instance):
         ladder = instance.get_recommended_prev_ladder()
         if ladder:
-            return {'id':ladder.pk,'title':ladder.title,'tags':ladder.tags.name,'creater':ladder.creater.name,'created_at':ladder.created_at}
+            return {'id':ladder.pk,'title':ladder.title,'tags':ladder.tags.name,'user':ladder.user.name,'created_at':ladder.created_at}
         else:
             return None
 
     def get_recommended_next_ladder(self,instance):
         ladder = instance.get_recommended_next_ladder()
         if ladder:
-            return {'id':ladder.pk,'title':ladder.title,'tags':ladder.tags.name,'creater':ladder.creater.name,'created_at':ladder.created_at}
+            return {'id':ladder.pk,'title':ladder.title,'tags':ladder.tags.name,'user':ladder.user.name,'created_at':ladder.created_at}
         else:
             return None
 
