@@ -1,6 +1,6 @@
 from rest_framework import serializers
 
-from .models import Ladder,Unit,User,Link,LearningStatus
+from .models import Ladder,Unit,User,Link,LearningStatus,Comment
 from django.contrib.auth.hashers import make_password
 
 

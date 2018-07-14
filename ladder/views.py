@@ -1,6 +1,6 @@
 from rest_framework import status,viewsets,filters,permissions,authentication
-from .models import User,Ladder,Unit,Link,LearningStatus
-from .serializers import LadderSerializer,UserSerializer,UnitSerializer,LinkSerializer,LearningStatusSerializer
+from .models import User,Ladder,Unit,Link,LearningStatus,Comment
+from .serializers import LadderSerializer,UserSerializer,UnitSerializer,LinkSerializer,LearningStatusSerializer,CommentSerializer
 from django_filters import rest_framework as filters
 from rest_framework.permissions import IsAuthenticatedOrReadOnly,IsAuthenticated,AllowAny,IsAdminUser
 from rest_framework.authentication import BasicAuthentication,TokenAuthentication
