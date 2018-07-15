@@ -70,7 +70,7 @@ class UnitSerializer(serializers.ModelSerializer):
 
 class LadderSerializer(serializers.ModelSerializer):
 
-    units = UnitSerializer(many=True,read_only=True)
+    units = UnitSerializer(many=True)
 
     recommended_prev_ladder = serializers.SerializerMethodField()
     recommended_next_ladder = serializers.SerializerMethodField()

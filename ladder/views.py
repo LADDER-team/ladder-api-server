@@ -82,7 +82,7 @@ class UserViewSet(viewsets.ModelViewSet):
         return [permission() for permission in permission_classes]
 
 
-class UnitViewSet(viewsets.ModelViewSet):
+class UnitViewSet(RequestUserPutView):
     queryset = Unit.objects.all()
     serializer_class = UnitSerializer
     permission_classes = (IsAuthenticatedOrReadOnly,IsOwnerOrReadOnly)
