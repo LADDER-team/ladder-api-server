@@ -1,6 +1,6 @@
 from rest_framework import status,viewsets,filters,permissions,authentication
-from .models import User,Ladder,Unit,Link,LearningStatus,Comment
-from .serializers import LadderSerializer,UserSerializer,UnitSerializer,LinkSerializer,LearningStatusSerializer,CommentSerializer
+from .models import Tags,User,Ladder,Unit,Link,LearningStatus,Comment
+from .serializers import TagsSerializer,LadderSerializer,UserSerializer,UnitSerializer,LinkSerializer,LearningStatusSerializer,CommentSerializer
 from django_filters import rest_framework as filters
 from rest_framework.permissions import IsAuthenticatedOrReadOnly,IsAuthenticated,AllowAny,IsAdminUser
 from rest_framework.authentication import BasicAuthentication,TokenAuthentication
@@ -88,16 +88,16 @@ class UnitViewSet(RequestUserPutView):
     permission_classes = (IsAuthenticatedOrReadOnly,IsOwnerOrReadOnly)
 
 
-# class TagViewSet(viewsets.ModelViewSet):
-#     queryset = Tags.objects.all()
-#     serializer_class = TagsSerializer
-#
-#     def get_permissions(self):
-#         if self.action == 'list' or self.action == 'retrieve':
-#             permission_classes = [AllowAny]
-#         else:
-#             permission_classes = [IsAdminUser]
-#         return [permission() for permission in permission_classes]
+class TagViewSet(viewsets.ModelViewSet):
+    queryset = Tags.objects.all()
+    serializer_class = TagsSerializer
+
+    def get_permissions(self):
+        if self.action == 'list' or self.action == 'retrieve':
+            permission_classes = [AllowAny]
+        else:
+            permission_classes = [IsAdminUser]
+        return [permission() for permission in permission_classes]
 
 
 class LinkViewSet(RequestUserPutView):

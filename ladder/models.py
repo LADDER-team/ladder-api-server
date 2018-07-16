@@ -48,15 +48,15 @@ class UserManager(BaseUserManager):
         return self._create_user(email, password, **extra_fields)
 
 
-# class Tags(models.Model):
-#     """タグ"""
-#     name = models.CharField('タグ名',max_length=50,unique=True)
-#
-#     def __unicode__(self):
-#         return self.name
-#
-#     def __str__(self):
-#         return self.name
+class Tags(models.Model):
+    """タグ"""
+    name = models.CharField('タグ名',max_length=50,unique=True)
+
+    def __unicode__(self):
+        return self.name
+
+    def __str__(self):
+        return self.name
 
 
 
@@ -118,7 +118,7 @@ class User(AbstractBaseUser, PermissionsMixin):
 class Ladder(models.Model):
     """ラダー"""
     title = models.CharField('タイトル',max_length=50)
-    #tags = models.ManyToManyField(Tags,blank=True,verbose_name='タグ')
+    tags = models.ManyToManyField(Tags,blank=True,verbose_name='タグ')
     user = models.ForeignKey(settings.AUTH_USER_MODEL,verbose_name='投稿者',on_delete=models.CASCADE)
     created_at = models.DateTimeField('作成日',auto_now_add=True)
     update_at = models.DateTimeField('更新日',auto_now=True)

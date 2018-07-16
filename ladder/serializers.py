@@ -1,22 +1,20 @@
 from rest_framework import serializers
 
-from .models import Ladder,Unit,User,Link,LearningStatus,Comment
+from .models import Ladder,Unit,User,Link,LearningStatus,Comment,Tags
 from django.contrib.auth.hashers import make_password
 
 
-# class TagsSerializer(serializers.ModelSerializer):
-#
-#     tagged_ladder_number = serializers.SerializerMethodField()
-#
-#     class Meta:
-#         model = Tags
-#         fields = ('id','name','tagged_ladder_number')
-#
-#     def create(self,validated_data):
-#         return Tags(**validated_data)
-#
-#     def get_tagged_ladder_number(self,instance):
-#         return Ladder.objects.filter(tags=instance).count()
+class TagsSerializer(serializers.ModelSerializer):
+
+    tagged_ladder_number = serializers.SerializerMethodField()
+
+    class Meta:
+        model = Tags
+        fields = ('id','name','tagged_ladder_number')
+
+
+    def get_tagged_ladder_number(self,instance):
+        return Ladder.objects.filter(tags=instance.pk).count()
 
 
 class UserSerializer(serializers.ModelSerializer):
@@ -80,7 +78,7 @@ class LadderSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Ladder
-        fields = ('id','title','is_public','user','created_at','update_at','units','recommended_prev_ladder','recommended_next_ladder','count_learning_number','count_finish_number')
+        fields = ('id','title','is_public','user','tags','created_at','update_at','units','recommended_prev_ladder','recommended_next_ladder','count_learning_number','count_finish_number')
 
     def create(self, validated_data):
         units_data = validated_data.pop('units')
