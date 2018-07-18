@@ -22,7 +22,7 @@ SECRET_KEY = os.environ['SECRET_KEY']
 
 DEBUG = False
 
-ALLOWED_HOSTS = ['api.ladder.noframeschool.com']
+ALLOWED_HOSTS = ['api.ladder.noframeschool.com', 'localhost']
 
 SESSION_COOKIE_SECURE = True
 
