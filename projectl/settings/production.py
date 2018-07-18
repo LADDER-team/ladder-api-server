@@ -24,6 +24,9 @@ DEBUG = False
 
 ALLOWED_HOSTS = ['api.ladder.noframeschool.com']
 
+SESSION_COOKIE_SECURE = True
+
+CSRF_COOKIE_SECURE = True
 
 # Database
 # https://docs.djangoproject.com/en/2.0/ref/settings/#databases
