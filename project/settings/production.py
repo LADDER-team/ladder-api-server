@@ -34,10 +34,10 @@ CSRF_COOKIE_SECURE = True
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql_psycopg2',
-        'NAME': 'ladder',
-        'USER': os.environ['DB_USER'],
-        'PASSWORD': os.environ['DB_PASS'],
-        'HOST': os.environ['DB_HOST'],
-        'PORT': os.environ['DB_PORT'],
+        'NAME': os.environ.get('DB_NAME', 'ladder'),
+        'USER': os.environ['DB_USER'], # Raise error if not exists
+        'PASSWORD': os.environ['DB_PASS'], # Raise error if not exists
+        'HOST': os.environ['DB_HOST'], # Raise error if not exists
+        'PORT': os.environ.get('DB_PORT', ''),
     }
 }
