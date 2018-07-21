@@ -96,12 +96,20 @@ class UserViewSet(viewsets.ModelViewSet):
     @action(methods=['get'],detail=True,url_path='learning-ladder')
     def get_learning_ladder(self,request,pk=None):
         ladder_list = []
-        for unit in LearningStatus.objects.all().filter(user=pk):
-            ladder_list.append({'id':unit.ladder.id})
+        for ls in LearningStatus.objects.all().filter(user=pk):
+            ladder_list.append({'id':ls.ladder.id})
 
         return Response(ladder_list)
 
+    @action(methods=['get'],detail=True,url_path='finish-ladder')
+    def get_finish_ladder(self,request,pk=None):
+        ladder_list =[]
+        for ls in LearningStatus.objects.all().filter(user=pk):
+            index = ls.unit.index
+            if index == ls.ladder.units_number() and ls.status == True:
+                ladder_list.append({'id':ls.ladder.id})
 
+        return Response(ladder_list)
 
     def get_permissions(self):
         if self.action in ('list','retrieve','create'):

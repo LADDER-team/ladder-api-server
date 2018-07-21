@@ -178,6 +178,12 @@ class Ladder(models.Model):
         except:
             return 0;
 
+    def units_number(self):
+        units_list = self.get_unit()
+        last_unit = units_list[-1]
+        return last_unit.index
+
+
 class Unit(models.Model):
     """ユニット"""
     title = models.CharField('タイトル',max_length=40)
