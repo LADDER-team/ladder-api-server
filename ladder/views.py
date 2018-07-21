@@ -93,6 +93,16 @@ class UserViewSet(viewsets.ModelViewSet):
 
         return Response(serializer.data, status=status.HTTP_201_CREATED, headers=headers)
 
+    @action(methods=['get'],detail=True,url_path='learning-ladder')
+    def get_learning_ladder(self,request,pk=None):
+        ladder_list = []
+        for unit in LearningStatus.objects.all().filter(user=pk):
+            ladder_list.append({'id':unit.ladder.id})
+
+        return Response(ladder_list)
+
+
+
     def get_permissions(self):
         if self.action in ('list','retrieve','create'):
             permission_classes = [AllowAny]

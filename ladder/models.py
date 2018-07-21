@@ -238,6 +238,10 @@ class LearningStatus(models.Model):
     def __str__(self):
         return self.user.name+' '+self.unit.title
 
+    @property
+    def ladder(self):
+        return self.unit.ladder
+
 
 class Comment(models.Model):
     """コメント"""
