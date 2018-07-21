@@ -97,7 +97,12 @@ class UserViewSet(viewsets.ModelViewSet):
     def get_learning_ladder(self,request,pk=None):
         ladder_list = []
         for ls in LearningStatus.objects.all().filter(user=pk):
-            ladder_list.append({'id':ls.ladder.id})
+            if ls.unit.index == 1:
+                unit_list =ls.ladder.get_unit()
+                last_unit = unit_list[-1]
+                last_unit_ls = LearningStatus.objects.filter(user=pk).get(unit=last_unit)
+                if last_unit_ls.status == False:
+                    ladder_list.append({'id':ls.ladder.id})
 
         return Response(ladder_list)
 
