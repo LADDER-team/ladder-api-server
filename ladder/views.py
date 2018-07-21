@@ -10,6 +10,9 @@ from django.shortcuts import render
 from rest_framework.decorators import action
 from django.utils import timezone
 from datetime import timedelta
+from django.template.loader import get_template
+from project import settings
+from django.core.mail import send_mail
 
 
 class IsOwnerOrReadOnly(permissions.BasePermission):
@@ -73,6 +76,22 @@ class LadderViewSet(RequestUserPutView,permissions.BasePermission):
 class UserViewSet(viewsets.ModelViewSet):
     queryset = User.objects.all().filter(is_active=True)
     serializer_class = UserSerializer
+
+    def create(self, request, *args, **kwargs):
+        serializer = self.get_serializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        self.perform_create(serializer)
+        headers = self.get_success_headers(serializer.data)
+
+        subject = '題名'
+        mail_template = get_template('mail.txt')
+        user = User.objects.get(email=request.data['email'])
+        context ={'user':user,}
+        message = mail_template.render(context)
+        from_email = settings.common.EMAIL_HOST_USER
+        send_mail(subject,message,from_email,[request.data['email']])
+
+        return Response(serializer.data, status=status.HTTP_201_CREATED, headers=headers)
 
     def get_permissions(self):
         if self.action in ('list','retrieve','create'):
