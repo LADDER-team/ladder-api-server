@@ -116,6 +116,13 @@ class UserViewSet(viewsets.ModelViewSet):
 
         return Response(ladder_list)
 
+    @action(methods=['get'],detail=True,url_path='my-ladder')
+    def get_my_ladders(self,request,pk=None):
+        user = User.objects.get(id=pk)
+        serializer = UserSerializer(user)
+
+        return Response(serializer.data['my_ladders'])
+
     def get_permissions(self):
         if self.action in ('list','retrieve','create'):
             permission_classes = [AllowAny]

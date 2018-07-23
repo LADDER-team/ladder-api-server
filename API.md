@@ -206,7 +206,7 @@ Vary: Accept
 ```
 
 ### GET users/:id/learning-ladder/
-指定されたidのユーザーの学習中のladderのidのリストを返す
+指定されたidのユーザーの学習中のladderのidの一覧
 #### 結果
 ```
 HTTP 200 OK
@@ -223,8 +223,8 @@ Vary: Accept
     }
 ]
 ```
-### GET users/finish-ladder/
-指定されたidのユーザーの学習済みのladderのリストを返す
+### GET users/:id/finish-ladder/
+指定されたidのユーザーの学習済みのladderの一覧
 #### 結果
 ```
 HTTP 200 OK
@@ -241,9 +241,64 @@ Vary: Accept
     }
 ]
 ```
+
+### GET users/:id/my-ladder/
+指定されたidのユーザーの投稿したladderの一覧
+####結果
+```
+HTTP 200 OK
+Allow: GET, HEAD, OPTIONS
+Content-Type: application/json
+Vary: Accept
+
+[
+    {
+        "id": 2,
+        "title": "python",
+        "user": "shun5",
+        "created_at": "2018-07-15T00:52:14.511474Z"
+    },
+    {
+        "id": 3,
+        "title": "pyython",
+        "user": "shun5",
+        "created_at": "2018-07-15T00:52:36.951966Z"
+    },
+    {
+        "id": 4,
+        "title": "pyythonn",
+        "user": "shun5",
+        "created_at": "2018-07-15T00:58:52.003245Z"
+    },
+    {
+        "id": 5,
+        "title": "pyythonnn",
+        "user": "shun5",
+        "created_at": "2018-07-15T11:35:38.395695Z"
+    },
+    {
+        "id": 6,
+        "title": "pythoon",
+        "user": "shun5",
+        "created_at": "2018-07-15T11:37:40.463821Z"
+    },
+    {
+        "id": 1,
+        "title": "pypython",
+        "user": "shun5",
+        "created_at": "2018-07-14T15:59:51.940872Z"
+    },
+    {
+        "id": 8,
+        "title": "test",
+        "user": "shun5",
+        "created_at": "2018-07-18T05:50:46.496288Z"
+    }
+]
+```
 ---
 ### GET ladder/
-公開状態がTrueのladderの一覧を返す
+公開状態がTrueのladderの一覧
 #### 結果
 ```
 HTTP 200 OK
