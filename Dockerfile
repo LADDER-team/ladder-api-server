@@ -21,5 +21,6 @@ RUN pip install --upgrade pip && \
 
 COPY ["docker/run.sh", "docker/wsgi.ini", "docker/uwsgi_params", "/root/ladder/"]
 COPY ["docker/ladder-nginx.conf", "/etc/nginx/sites-enabled/"]
+COPY [".", "/root/ladder/"]
 
 CMD ["bash", "/root/ladder/run.sh"]
