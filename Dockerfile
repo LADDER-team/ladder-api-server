@@ -6,8 +6,7 @@ EXPOSE 80
 
 ARG GIT_REF=master
 
-RUN git clone -b ${GIT_REF} https://github.com/LADDER-team/ladder-api-server.git /root/ladder && \
-    pip install --upgrade pip && \
+RUN pip install --upgrade pip && \
     pip install django \
                 django-crispy-forms \
                 djangorestframework \
