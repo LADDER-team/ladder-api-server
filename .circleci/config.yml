@@ -8,14 +8,13 @@ jobs:
       - checkout
       - setup_remote_docker
       - run:
-        name: build app Docker image
-        command: |
-          docker build -t app .
+          name: build app Docker image
+          command: docker build -t app .
       - deploy:
-        name: push app Docker image
-        command: |
-          if [ "${CIRCLE_BRANCH}" == "develop" ]; then
-            echo ${DOCKERHUB_PASS} | docker login -u ${DOCKERHUB_USER} --password-stdin
-            docker tag app "${DOCKERHUB_USER}/ladder-api-server:develop"
-            docker push "${DOCKERHUB_USER}/ladder-api-server:develop"
-          fi
+          name: push app Docker image
+          command: |
+            if [ "${CIRCLE_BRANCH}" == "develop" ]; then
+              echo ${DOCKERHUB_PASS} | docker login -u ${DOCKERHUB_USER} --password-stdin
+              docker tag app "${DOCKERHUB_USER}/ladder-api-server:develop"
+              docker push "${DOCKERHUB_USER}/ladder-api-server:develop"
+            fi
