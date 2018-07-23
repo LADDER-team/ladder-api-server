@@ -82,7 +82,11 @@ class LadderSerializer(serializers.ModelSerializer):
 
     def create(self, validated_data):
         units_data = validated_data.pop('units')
+        tags = validated_data.pop('tags')
         ladder = Ladder.objects.create(**validated_data)
+        for tag in tags:
+            ladder.tags.add(tag)
+            ladder.save()
         for unit_data in units_data:
             Unit.objects.create(ladder=ladder,**unit_data)
         return ladder
