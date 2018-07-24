@@ -83,13 +83,13 @@ class UserViewSet(viewsets.ModelViewSet):
         self.perform_create(serializer)
         headers = self.get_success_headers(serializer.data)
 
-        # subject = '題名'
-        # mail_template = get_template('mail.txt')
-        # user = User.objects.get(email=request.data['email'])
-        # context ={'user':user,}
-        # message = mail_template.render(context)
-        # from_email = settings.common.EMAIL_HOST_USER
-        # send_mail(subject,message,from_email,[request.data['email']])
+        subject = 'LADDER α版ユーザー登録完了のご案内'
+        mail_template = get_template('mail.txt')
+        user = User.objects.get(email=request.data['email'])
+        context ={'user':user,}
+        message = mail_template.render(context)
+        from_email = settings.common.EMAIL_HOST_USER
+        send_mail(subject,message,from_email,[request.data['email']])
 
         return Response(serializer.data, status=status.HTTP_201_CREATED, headers=headers)
 
@@ -115,6 +115,13 @@ class UserViewSet(viewsets.ModelViewSet):
                 ladder_list.append({'id':ls.ladder.id})
 
         return Response(ladder_list)
+
+    @action(methods=['get'],detail=True,url_path='my-ladder')
+    def get_my_ladders(self,request,pk=None):
+        user = User.objects.get(id=pk)
+        serializer = UserSerializer(user)
+
+        return Response(serializer.data['my_ladders'])
 
     def get_permissions(self):
         if self.action in ('list','retrieve','create'):
