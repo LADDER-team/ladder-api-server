@@ -4,6 +4,7 @@ from .serializers import TagsSerializer,LadderSerializer,UserSerializer,UnitSeri
 from django_filters import rest_framework as filters
 from rest_framework.permissions import IsAuthenticatedOrReadOnly,IsAuthenticated,AllowAny,IsAdminUser
 from rest_framework.authentication import BasicAuthentication,TokenAuthentication
+from rest_framework.pagination import LimitOffsetPagination
 from rest_framework.response import Response
 from rest_framework.exceptions import ValidationError
 from django.shortcuts import render
@@ -52,6 +53,7 @@ class LadderViewSet(RequestUserPutView,permissions.BasePermission):
     queryset = Ladder.objects.all().filter(is_public=True)
     serializer_class = LadderSerializer
     permission_classes = (IsOwnerOrReadOnly,)
+    pagenation = (LimitOffsetPagination,)
 
     @action(methods=['get'],detail=False)
     def ranking(self,request):
@@ -76,6 +78,7 @@ class LadderViewSet(RequestUserPutView,permissions.BasePermission):
 class UserViewSet(viewsets.ModelViewSet):
     queryset = User.objects.all().filter(is_active=True)
     serializer_class = UserSerializer
+    pagenation = (LimitOffsetPagination,)
 
     def create(self, request, *args, **kwargs):
         serializer = self.get_serializer(data=request.data)
@@ -135,7 +138,7 @@ class UnitViewSet(RequestUserPutView):
     queryset = Unit.objects.all()
     serializer_class = UnitSerializer
     permission_classes = (IsAuthenticatedOrReadOnly,IsOwnerOrReadOnly)
-
+    pagenation = (LimitOffsetPagination,)
 
 class TagViewSet(viewsets.ModelViewSet):
     queryset = Tags.objects.all()

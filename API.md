@@ -1,17 +1,23 @@
 # API仕様書
 ---
 ## https://api/
+### 共通
+```Content-Type: application/json```
+
 ---
 ### GET users/
 登録されているUserの一覧を返す
+#### クエリパラメータ
+|名前|型|必須|値の説明|
+|:-|-|-|:-|
+|limit|数値|　|何件取得するかの指定（指定なしは100件）|
+|offset|数値||何件目から切り出すかの指定|
 #### 結果
 ```
-HTTP 200 OK
-Allow: GET, POST, HEAD, OPTIONS
-Content-Type: application/json
-Vary: Accept
-
 [
+    "count": 4,
+    "next": null,
+    "previous": null
     {
         "id": 1,
         "name": "",
@@ -123,10 +129,6 @@ Vary: Accept
 
 #### 結果
 ```
-HTTP 201 Created
-Allow: GET, POST, HEAD, OPTIONS
-Content-Type: application/json
-Vary: Accept
 
 {
     "id": 30,
@@ -141,11 +143,6 @@ Vary: Accept
 指定されたidのユーザーを返します
 #### 結果
 ```
-HTTP 200 OK
-Allow: GET, PUT, PATCH, DELETE, HEAD, OPTIONS
-Content-Type: application/json
-Vary: Accept
-
 {
     "id": 2,
     "name": "shun5",
@@ -206,14 +203,9 @@ Vary: Accept
 ```
 
 ### GET users/:id/learning-ladder/
-指定されたidのユーザーの学習中のladderのidの一覧
+指定されたidのユーザーの学習中のladderのidのリストを返す
 #### 結果
 ```
-HTTP 200 OK
-Allow: GET, HEAD, OPTIONS
-Content-Type: application/json
-Vary: Accept
-
 [
     {
         "id": 1
@@ -224,14 +216,9 @@ Vary: Accept
 ]
 ```
 ### GET users/:id/finish-ladder/
-指定されたidのユーザーの学習済みのladderの一覧
+指定されたidのユーザーの学習済みのladderのリストを返す
 #### 結果
 ```
-HTTP 200 OK
-Allow: GET, HEAD, OPTIONS
-Content-Type: application/json
-Vary: Accept
-
 [
     {
         "id": 2
@@ -241,72 +228,20 @@ Vary: Accept
     }
 ]
 ```
-
-### GET users/:id/my-ladder/
-指定されたidのユーザーの投稿したladderの一覧
-####結果
-```
-HTTP 200 OK
-Allow: GET, HEAD, OPTIONS
-Content-Type: application/json
-Vary: Accept
-
-[
-    {
-        "id": 2,
-        "title": "python",
-        "user": "shun5",
-        "created_at": "2018-07-15T00:52:14.511474Z"
-    },
-    {
-        "id": 3,
-        "title": "pyython",
-        "user": "shun5",
-        "created_at": "2018-07-15T00:52:36.951966Z"
-    },
-    {
-        "id": 4,
-        "title": "pyythonn",
-        "user": "shun5",
-        "created_at": "2018-07-15T00:58:52.003245Z"
-    },
-    {
-        "id": 5,
-        "title": "pyythonnn",
-        "user": "shun5",
-        "created_at": "2018-07-15T11:35:38.395695Z"
-    },
-    {
-        "id": 6,
-        "title": "pythoon",
-        "user": "shun5",
-        "created_at": "2018-07-15T11:37:40.463821Z"
-    },
-    {
-        "id": 1,
-        "title": "pypython",
-        "user": "shun5",
-        "created_at": "2018-07-14T15:59:51.940872Z"
-    },
-    {
-        "id": 8,
-        "title": "test",
-        "user": "shun5",
-        "created_at": "2018-07-18T05:50:46.496288Z"
-    }
-]
-```
 ---
 ### GET ladder/
-公開状態がTrueのladderの一覧
+公開状態がTrueのladderの一覧を返す
+#### クエリパラエータ
+|名前|型|必須|値の説明|
+|:-|-|-|:-|
+|limit|数値|　|何件取得するかの指定（指定なしは100件）|
+|offset|数値||何件目から切り出すかの指定|
 #### 結果
 ```
-HTTP 200 OK
-Allow: GET, POST, HEAD, OPTIONS
-Content-Type: application/json
-Vary: Accept
-
 [
+    "count": 6,
+    "next": null,
+    "previous": null
     {
         "id": 2,
         "title": "python",
@@ -486,11 +421,6 @@ JWT認証が通ったユーザーのみ可能
 学習者の多い上位5つのladderのidと学習者数を返す
 #### 結果
 ```
-HTTP 200 OK
-Allow: GET, HEAD, OPTIONS
-Content-Type: application/json
-Vary: Accept
-
 [
     {
         "id": 1,
@@ -518,11 +448,6 @@ Vary: Accept
 1週間以内に更新されたladderの中で学習者が多い上位5件のidと学習者数
 #### 結果
 ```
-HTTP 200 OK
-Allow: GET, HEAD, OPTIONS
-Content-Type: application/json
-Vary: Accept
-
 [
     {
         "id": 1,
@@ -549,14 +474,17 @@ Vary: Accept
 ---
 ### GET unit/
 投稿されたunitの一覧
+#### クエリパラエータ
+|名前|型|必須|値の説明|
+|:-|-|-|:-|
+|limit|数値|　|何件取得するかの指定（指定なしは100件）|
+|offset|数値||何件目から切り出すかの指定|
 #### 結果
 ```
-HTTP 200 OK
-Allow: GET, POST, HEAD, OPTIONS
-Content-Type: application/json
-Vary: Accept
-
 [
+    "count": 6,
+    "next": null,
+    "previous": null
     {
         "id": 2,
         "title": "pypython",
@@ -643,11 +571,6 @@ JWT認証が通ったユーザーのみ可能
 ###  GET tag/
 #### 結果
 ```
-HTTP 200 OK
-Allow: GET, POST, HEAD, OPTIONS
-Content-Type: application/json
-Vary: Accept
-
 [
     {
         "id": 4,
@@ -666,11 +589,6 @@ Vary: Accept
 pegの取得
 #### 結果
 ```
-HTTP 200 OK
-Allow: GET, POST, HEAD, OPTIONS
-Content-Type: application/json
-Vary: Accept
-
 [
     {
         "id": 1,
@@ -704,11 +622,6 @@ JWT認証が通ったユーザーのみ可能
 学習状況の一覧
 #### 結果
 ```
-HTTP 200 OK
-Allow: GET, POST, HEAD, OPTIONS
-Content-Type: application/json
-Vary: Accept
-
 [
     {
         "id": 1,
@@ -780,11 +693,6 @@ JWT認証が通ったユーザーのみ可能
 コメントの一覧
 #### 結果
 ```
-HTTP 200 OK
-Allow: GET, POST, HEAD, OPTIONS
-Content-Type: application/json
-Vary: Accept
-
 [
     {
         "id": 1,
