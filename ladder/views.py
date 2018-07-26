@@ -1,15 +1,19 @@
 from rest_framework import status,viewsets,filters,permissions,authentication
-from .models import Tags,User,Ladder,Unit,Link,LearningStatus
-from .serializers import TagsSerializer,LadderSerializer,UserSerializer,UnitSerializer,LinkSerializer,LearningStatusSerializer
+from .models import Tags,User,Ladder,Unit,Link,LearningStatus,Comment
+from .serializers import TagsSerializer,LadderSerializer,UserSerializer,UnitSerializer,LinkSerializer,LearningStatusSerializer,CommentSerializer
 from django_filters import rest_framework as filters
 from rest_framework.permissions import IsAuthenticatedOrReadOnly,IsAuthenticated,AllowAny,IsAdminUser
 from rest_framework.authentication import BasicAuthentication,TokenAuthentication
+from rest_framework.pagination import LimitOffsetPagination
 from rest_framework.response import Response
 from rest_framework.exceptions import ValidationError
 from django.shortcuts import render
 from rest_framework.decorators import action
 from django.utils import timezone
 from datetime import timedelta
+from django.template.loader import get_template
+from project import settings
+from django.core.mail import send_mail
 
 
 class IsOwnerOrReadOnly(permissions.BasePermission):
@@ -17,28 +21,13 @@ class IsOwnerOrReadOnly(permissions.BasePermission):
     def has_object_permission(self, request, view, obj):
         if request.method in permissions.SAFE_METHODS:
             return True
-        return obj.creater == request.user
+        return obj.user == request.user
 
 
-class LadderFilter(filters.FilterSet):
-    tags = filters.ModelMultipleChoiceFilter(queryset=Tags.objects.all())
-
-    class Meta:
-        model = Ladder
-        fields = ['tags']
-
-
-class LadderViewSet(viewsets.ModelViewSet,permissions.BasePermission):
-    queryset = Ladder.objects.all().filter(is_public=True)
-    serializer_class = LadderSerializer
-    filter_class = LadderFilter
-    permission_classes = (IsOwnerOrReadOnly,)
-
+class RequestUserPutView(viewsets.ModelViewSet):
     def create(self, request, *args, **kwargs):
-        if {'title':request.data['title']} in Ladder.objects.filter(creater=request.user.pk).values('title'):
-            raise ValidationError('同じタイトルのLADDERが投稿されています')
         add_data = request.data.copy()
-        add_data['creater'] = request.user.pk
+        add_data['user'] = request.user.pk
         serializer = self.get_serializer(data=add_data)
         serializer.is_valid(raise_exception=True)
         self.perform_create(serializer)
@@ -47,7 +36,7 @@ class LadderViewSet(viewsets.ModelViewSet,permissions.BasePermission):
 
     def update(self, request, *args, **kwargs):
         add_data = request.data.copy()
-        add_data['creater'] = request.user.pk
+        add_data['user'] = request.user.pk
         partial = kwargs.pop('partial', False)
         instance = self.get_object()
         serializer = self.get_serializer(instance, data=add_data, partial=True)
@@ -58,6 +47,13 @@ class LadderViewSet(viewsets.ModelViewSet,permissions.BasePermission):
             instance._prefetched_objects_cache = {}
 
         return Response(serializer.data)
+
+
+class LadderViewSet(RequestUserPutView,permissions.BasePermission):
+    queryset = Ladder.objects.all().filter(is_public=True)
+    serializer_class = LadderSerializer
+    permission_classes = (IsOwnerOrReadOnly,)
+    pagenation = (LimitOffsetPagination,)
 
     @action(methods=['get'],detail=False)
     def ranking(self,request):
@@ -82,6 +78,53 @@ class LadderViewSet(viewsets.ModelViewSet,permissions.BasePermission):
 class UserViewSet(viewsets.ModelViewSet):
     queryset = User.objects.all().filter(is_active=True)
     serializer_class = UserSerializer
+    pagenation = (LimitOffsetPagination,)
+
+    def create(self, request, *args, **kwargs):
+        serializer = self.get_serializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        self.perform_create(serializer)
+        headers = self.get_success_headers(serializer.data)
+
+        subject = 'LADDER α版ユーザー登録完了のご案内'
+        mail_template = get_template('mail.txt')
+        user = User.objects.get(email=request.data['email'])
+        context ={'user':user,}
+        message = mail_template.render(context)
+        from_email = settings.common.EMAIL_HOST_USER
+        send_mail(subject,message,from_email,[request.data['email']])
+
+        return Response(serializer.data, status=status.HTTP_201_CREATED, headers=headers)
+
+    @action(methods=['get'],detail=True,url_path='learning-ladder')
+    def get_learning_ladder(self,request,pk=None):
+        ladder_list = []
+        for ls in LearningStatus.objects.all().filter(user=pk):
+            if ls.unit.index == 1:
+                unit_list =ls.ladder.get_unit()
+                last_unit = unit_list[-1]
+                last_unit_ls = LearningStatus.objects.filter(user=pk).get(unit=last_unit)
+                if last_unit_ls.status == False:
+                    ladder_list.append({'id':ls.ladder.id})
+
+        return Response(ladder_list)
+
+    @action(methods=['get'],detail=True,url_path='finish-ladder')
+    def get_finish_ladder(self,request,pk=None):
+        ladder_list =[]
+        for ls in LearningStatus.objects.all().filter(user=pk):
+            index = ls.unit.index
+            if index == ls.ladder.units_number() and ls.status == True:
+                ladder_list.append({'id':ls.ladder.id})
+
+        return Response(ladder_list)
+
+    @action(methods=['get'],detail=True,url_path='my-ladder')
+    def get_my_ladders(self,request,pk=None):
+        user = User.objects.get(id=pk)
+        serializer = UserSerializer(user)
+
+        return Response(serializer.data['my_ladders'])
 
     def get_permissions(self):
         if self.action in ('list','retrieve','create'):
@@ -91,11 +134,11 @@ class UserViewSet(viewsets.ModelViewSet):
         return [permission() for permission in permission_classes]
 
 
-class UnitViewSet(viewsets.ModelViewSet):
+class UnitViewSet(RequestUserPutView):
     queryset = Unit.objects.all()
     serializer_class = UnitSerializer
     permission_classes = (IsAuthenticatedOrReadOnly,IsOwnerOrReadOnly)
-
+    pagenation = (LimitOffsetPagination,)
 
 class TagViewSet(viewsets.ModelViewSet):
     queryset = Tags.objects.all()
@@ -109,66 +152,25 @@ class TagViewSet(viewsets.ModelViewSet):
         return [permission() for permission in permission_classes]
 
 
-class LinkViewSet(viewsets.ModelViewSet):
+class LinkViewSet(RequestUserPutView):
     queryset = Link.objects.all()
     serializer_class = LinkSerializer
     permission_classes = (IsOwnerOrReadOnly,)
 
-    def create(self, request, *args, **kwargs):
-        if {'latter':int(request.data['latter'])} in Link.objects.filter(user=request.user.pk).values('latter'):
-            raise ValidationError('既にこのLADDERはペグされています')
-        add_data = request.data.copy()
-        add_data['user'] = request.user.pk
-        serializer = self.get_serializer(data=add_data)
-        serializer.is_valid(raise_exception=True)
-        self.perform_create(serializer)
-        headers = self.get_success_headers(serializer.data)
-        return Response(serializer.data, status=status.HTTP_201_CREATED, headers=headers)
-
-    def update(self, request, *args, **kwargs):
-        add_data = request.data.copy()
-        add_data['user'] = request.user.pk
-        partial = kwargs.pop('partial', False)
-        instance = self.get_object()
-        serializer = self.get_serializer(instance, data=add_data, partial=True)
-        serializer.is_valid(raise_exception=True)
-        self.perform_update(serializer)
-
-        if getattr(instance, '_prefetched_objects_cache', None):
-            instance._prefetched_objects_cache = {}
-
-        return Response(serializer.data)
 
 
-class LearningStatusViewSet(viewsets.ModelViewSet):
+class LearningStatusViewSet(RequestUserPutView):
     queryset = LearningStatus.objects.all()
     serializer_class = LearningStatusSerializer
     permission_classes = (IsAuthenticatedOrReadOnly,IsOwnerOrReadOnly)
 
-    def create(self, request, *args, **kwargs):
-        if {'unit':int(request.data['unit'])} in LearningStatus.objects.filter(user=request.user.pk).values('unit'):
-            raise ValidationError('同じタイトルのLADDERが投稿されています')
-        add_data = request.data.copy()
-        add_data['user'] = request.user.pk
-        serializer = self.get_serializer(data=add_data)
-        serializer.is_valid(raise_exception=True)
-        self.perform_create(serializer)
-        headers = self.get_success_headers(serializer.data)
-        return Response(serializer.data, status=status.HTTP_201_CREATED, headers=headers)
 
-    def update(self, request, *args, **kwargs):
-        add_data = request.data.copy()
-        add_data['user'] = request.user.pk
-        partial = kwargs.pop('partial', False)
-        instance = self.get_object()
-        serializer = self.get_serializer(instance, data=add_data, partial=True)
-        serializer.is_valid(raise_exception=True)
-        self.perform_update(serializer)
+class CommentViewSet(RequestUserPutView):
+    queryset = Comment.objects.all()
+    serializer_class = CommentSerializer
+    permission_classes = (IsAuthenticatedOrReadOnly,IsOwnerOrReadOnly)
 
-        if getattr(instance, '_prefetched_objects_cache', None):
-            instance._prefetched_objects_cache = {}
 
-        return Response(serializer.data)
 
 def index(request):
     return render(request, 'index.html', {})

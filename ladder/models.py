@@ -106,7 +106,7 @@ class User(AbstractBaseUser, PermissionsMixin):
 
     def get_my_ladders(self):
         ladders_list = []
-        for ladder in Ladder.objects.filter(creater=self):
+        for ladder in Ladder.objects.filter(user=self):
             ladders_list.append(ladder)
         return ladders_list
 
@@ -115,18 +115,21 @@ class User(AbstractBaseUser, PermissionsMixin):
         return self.email
 
     @property
-    def creater(self):
-        return self
+    def user(self):
+        return self.id
 
 
 class Ladder(models.Model):
     """ラダー"""
     title = models.CharField('タイトル',max_length=50)
     tags = models.ManyToManyField(Tags,blank=True,verbose_name='タグ')
-    creater = models.ForeignKey(settings.AUTH_USER_MODEL,verbose_name='投稿者',on_delete=models.CASCADE)
+    user = models.ForeignKey(settings.AUTH_USER_MODEL,verbose_name='投稿者',on_delete=models.CASCADE)
     created_at = models.DateTimeField('作成日',auto_now_add=True)
     update_at = models.DateTimeField('更新日',auto_now=True)
     is_public = models.BooleanField('公開設定',default=True)
+
+    class Meta:
+        unique_together = ('user','title')
 
 
     def __unicode__(self):
@@ -179,13 +182,22 @@ class Ladder(models.Model):
         except:
             return 0;
 
+    def units_number(self):
+        units_list = self.get_unit()
+        last_unit = units_list[-1]
+        return last_unit.index
+
+
 class Unit(models.Model):
     """ユニット"""
     title = models.CharField('タイトル',max_length=40)
     description = models.TextField('説明文')
-    ladder = models.ForeignKey(Ladder,verbose_name='ラダー',on_delete=models.CASCADE)
+    ladder = models.ForeignKey(Ladder,related_name='units',on_delete=models.CASCADE)
     url = models.URLField('URL')
     index = models.PositiveIntegerField('番号')
+
+    class Meta:
+        unique_together = ('ladder','index')
 
     def __unicode__(self):
         return self.title
@@ -194,8 +206,11 @@ class Unit(models.Model):
         return self.title
 
     @property
-    def creater(self):
-        return self.ladder.creater
+    def user(self):
+        return self.ladder.user
+
+    def get_comments(self):
+        return Comment.objects.filter(unit=self)
 
 
 class Link(models.Model):
@@ -204,15 +219,15 @@ class Link(models.Model):
     latter = models.ForeignKey(Ladder,related_name='latter_ladder',on_delete=models.CASCADE)
     user = models.ForeignKey(settings.AUTH_USER_MODEL,'ユーザー')
 
+    class Meta:
+        unique_together = ('user','latter')
+
+
     def __unicode__(self):
         return self.latter.title
 
     def __str__(self):
         return self.latter.title
-
-    @property
-    def creater(self):
-        return self.user
 
 
 class LearningStatus(models.Model):
@@ -223,6 +238,10 @@ class LearningStatus(models.Model):
     created_at = models.DateTimeField('作成日',default=timezone.now)
     update_at = models.DateTimeField('更新日',auto_now=True)
 
+    class Meta:
+        unique_together = ('user','unit')
+
+
     def __unicode__(self):
         return self.user.name+' '+self.unit.title
 
@@ -230,5 +249,20 @@ class LearningStatus(models.Model):
         return self.user.name+' '+self.unit.title
 
     @property
-    def creater(self):
-        return self.user
+    def ladder(self):
+        return self.unit.ladder
+
+
+class Comment(models.Model):
+    """コメント"""
+    unit = models.ForeignKey(Unit,verbose_name='ユニット',on_delete=models.CASCADE)
+    user = models.ForeignKey(settings.AUTH_USER_MODEL,verbose_name='ユーザー',on_delete=models.CASCADE)
+    text = models.TextField('コメント')
+    target = models.ForeignKey('self',verbose_name='親コメント',blank=True,null=True,on_delete=models.CASCADE)
+    created_at = models.DateTimeField('投稿日',default=timezone.now)
+
+    def ___unicode__(self):
+        return str(self.unit.pk)+(self.pk)
+
+    def __str__(self):
+        return str(self.unit.pk)+' '+str(self.pk)
