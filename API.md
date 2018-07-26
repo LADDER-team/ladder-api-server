@@ -215,7 +215,7 @@
     }
 ]
 ```
-### GET users/finish-ladder/
+### GET users/:id/finish-ladder/
 指定されたidのユーザーの学習済みのladderのリストを返す
 #### 結果
 ```
