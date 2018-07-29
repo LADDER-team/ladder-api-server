@@ -79,13 +79,6 @@ class Migration(migrations.Migration):
             ],
         ),
         migrations.CreateModel(
-            name='Tags',
-            fields=[
-                ('id', models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('name', models.CharField(max_length=50, unique=True, verbose_name='タグ名')),
-            ],
-        ),
-        migrations.CreateModel(
             name='Unit',
             fields=[
                 ('id', models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
@@ -105,11 +98,6 @@ class Migration(migrations.Migration):
             model_name='learningstatus',
             name='user',
             field=models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to=settings.AUTH_USER_MODEL, verbose_name='ユーザー'),
-        ),
-        migrations.AddField(
-            model_name='ladder',
-            name='tags',
-            field=models.ManyToManyField(blank=True, to='ladder.Tags', verbose_name='タグ'),
         ),
         migrations.AddField(
             model_name='ladder',
