@@ -14,6 +14,6 @@ router.register(r'comments',CommentViewSet)
 
 urlpatterns = [
     path('api-auth/', obtain_jwt_token),
-    path('', index, name='index')
+    path('', index, name='index'),
 ]
 urlpatterns += router.urls
