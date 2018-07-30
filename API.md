@@ -394,7 +394,7 @@ JWT認証が通ったユーザーのみ可能
 |:--|-|-|:-|
 |title|文字列|○|ladderのタイトル|
 |is_public|真偽値||公開状態 defaultはFalse|
-|tags|数値||tagづけしたいtagのid|
+|tags|数値|○|tagづけしたいtagのid(tag付けしないときは空のlist)|
 |units|オブジェクト||unitのobjectのリスト　詳細は unit/へ|
 #### 結果
 ```

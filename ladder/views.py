@@ -1,6 +1,6 @@
 from rest_framework import status,viewsets,filters,permissions,authentication
-from .models import Tags,User,Ladder,Unit,Link,LearningStatus,Comment
-from .serializers import TagsSerializer,LadderSerializer,UserSerializer,UnitSerializer,LinkSerializer,LearningStatusSerializer,CommentSerializer
+from .models import Tag,User,Ladder,Unit,Link,LearningStatus,Comment
+from .serializers import TagSerializer,LadderSerializer,UserSerializer,UnitSerializer,LinkSerializer,LearningStatusSerializer,CommentSerializer
 from django_filters import rest_framework as filters
 from rest_framework.permissions import IsAuthenticatedOrReadOnly,IsAuthenticated,AllowAny,IsAdminUser
 from rest_framework.authentication import BasicAuthentication,TokenAuthentication
@@ -141,8 +141,8 @@ class UnitViewSet(RequestUserPutView):
     pagenation = (LimitOffsetPagination,)
 
 class TagViewSet(viewsets.ModelViewSet):
-    queryset = Tags.objects.all()
-    serializer_class = TagsSerializer
+    queryset = Tag.objects.all()
+    serializer_class = TagSerializer
 
     def get_permissions(self):
         if self.action == 'list' or self.action == 'retrieve':
