@@ -279,7 +279,7 @@ class Comment(models.Model):
     unit = models.ForeignKey(Unit,verbose_name='ユニット',on_delete=models.CASCADE)
     user = models.ForeignKey(settings.AUTH_USER_MODEL,verbose_name='ユーザー',on_delete=models.CASCADE)
     text = models.TextField('コメント')
-    target = models.ForeignKey('self',verbose_name='親コメント',blank=True,on_delete=models.CASCADE)
+    target = models.ForeignKey('self',verbose_name='親コメント',null=True,blank=True,on_delete=models.CASCADE)
     created_at = models.DateTimeField('投稿日',default=timezone.now)
 
     def ___unicode__(self):
