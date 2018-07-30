@@ -1,20 +1,19 @@
 from rest_framework import serializers
 
-from .models import Ladder,Unit,User,Link,LearningStatus,Comment,Tags
+from .models import Ladder,Unit,User,Link,LearningStatus,Comment,Tag
 from django.contrib.auth.hashers import make_password
 
 
-class TagsSerializer(serializers.ModelSerializer):
+class TagSerializer(serializers.ModelSerializer):
 
     tagged_ladder_number = serializers.SerializerMethodField()
 
     class Meta:
-        model = Tags
+        model = Tag
         fields = ('id','name','tagged_ladder_number')
 
     def get_tagged_ladder_number(self,instance):
-        ladders = instance.ladders.count()
-        return ladders
+        return Ladder.objects.filter(tags=instance.pk).count()
 
 class UserSerializer(serializers.ModelSerializer):
 
@@ -68,25 +67,25 @@ class UnitSerializer(serializers.ModelSerializer):
 class LadderSerializer(serializers.ModelSerializer):
 
     units = UnitSerializer(many=True)
-
+    tags = TagSerializer(many=True)
+    
     recommended_prev_ladder = serializers.SerializerMethodField()
     recommended_next_ladder = serializers.SerializerMethodField()
     count_finish_number = serializers.SerializerMethodField()
     count_learning_number = serializers.SerializerMethodField()
-    tag = serializers.SerializerMethodField()
 
 
     class Meta:
         model = Ladder
-        fields = ('id','title','is_public','user','created_at','tag','update_at','units','recommended_prev_ladder','recommended_next_ladder','count_learning_number','count_finish_number')
+        fields = ('id','title','is_public','user','created_at','tags','update_at','units','recommended_prev_ladder','recommended_next_ladder','count_learning_number','count_finish_number')
 
     def create(self, validated_data):
         units_data = validated_data.pop('units')
-        tags = validated_data.pop('tags')
+        tags_data = validated_data.pop('tags')
         ladder = Ladder.objects.create(**validated_data)
-        for tag in tags:
-            tag.ladders.add(ladder)
-            tag.save()
+        for tag in tags_data:
+            ladder.tags.add(tag)
+            ladder.save()
         for unit_data in units_data:
             Unit.objects.create(ladder=ladder,**unit_data)
         return ladder
@@ -111,13 +110,6 @@ class LadderSerializer(serializers.ModelSerializer):
 
     def get_count_learning_number(self,instance):
         return instance.count_learning_number()
-
-    def get_tag(self,instance):
-        tags = instance.get_tags()
-        tag_list =[]
-        for tag in instance.get_tags():
-            tag_list.append(tag.id)
-        return tag_list
 
 
 

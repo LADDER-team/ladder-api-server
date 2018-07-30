@@ -1,5 +1,5 @@
 from django.contrib import admin
-from .models import User,Ladder,Unit,Link,LearningStatus,Comment,Tags
+from .models import User,Ladder,Unit,Link,LearningStatus,Comment,Tag
 
 
 class UserAdmin(admin.ModelAdmin):
@@ -25,7 +25,7 @@ class LearningStatusAdmin(admin.ModelAdmin):
 class CommentAdmin(admin.ModelAdmin):
     list_display = ('id','unit','user','text')
 
-admin.site.register(Tags)
+admin.site.register(Tag)
 admin.site.register(User,UserAdmin)
 admin.site.register(Ladder,LadderAdmin)
 admin.site.register(Unit,UnitAdmin)

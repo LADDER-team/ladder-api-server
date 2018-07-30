@@ -11,6 +11,21 @@ from django.conf import settings
 from django.dispatch import receiver
 from django.db.models.signals import post_save
 from rest_framework.authtoken.models import Token
+import uuid
+import os
+
+
+def get_image_path(self, filename):
+    """カスタマイズした画像パスを取得する.
+
+    :param self: インスタンス (models.Model)
+    :param filename: 元ファイル名
+    :return: カスタマイズしたファイル名を含む画像パス
+    """
+    prefix = 'usericon/'
+    name = str(uuid.uuid4()).replace('-', '')
+    extension = os.path.splitext(filename)[-1]
+    return prefix + name + extension
 
 
 class UserManager(BaseUserManager):
@@ -55,7 +70,7 @@ class User(AbstractBaseUser, PermissionsMixin):
     """カスタムユーザーモデル."""
     name = models.CharField(_('表示用ユーザー名'),max_length=255)
     email = models.EmailField(_('email address'), unique=True)
-    icon = models.ImageField(_('icon'),blank=True,null=True)
+    icon = models.ImageField(_('icon'),upload_to=get_image_path,blank=True,default=None)
     profile = models.TextField(_('profile'),blank=True)
 
 
@@ -110,6 +125,18 @@ class User(AbstractBaseUser, PermissionsMixin):
         return self.id
 
 
+
+class Tag(models.Model):
+    """タグ"""
+    name = models.CharField('タグ名',max_length=50,unique=True)
+
+    def __unicode__(self):
+        return self.name
+
+    def __str__(self):
+        return self.name
+
+
 class Ladder(models.Model):
     """ラダー"""
     title = models.CharField('タイトル',max_length=50)
@@ -117,6 +144,7 @@ class Ladder(models.Model):
     created_at = models.DateTimeField('作成日',auto_now_add=True)
     update_at = models.DateTimeField('更新日',auto_now=True)
     is_public = models.BooleanField('公開設定',default=True)
+    tags = models.ManyToManyField(Tag,related_name='tag',blank=True)
 
     class Meta:
         unique_together = ('user','title')
@@ -178,18 +206,7 @@ class Ladder(models.Model):
         return last_unit.index
 
     def get_tags(self):
-        return Tags.objects.all().filter(ladders=self)
-
-class Tags(models.Model):
-    """タグ"""
-    name = models.CharField('タグ名',max_length=50,unique=True)
-    ladders = models.ManyToManyField(Ladder,verbose_name='ラダー',blank=True)
-
-    def __unicode__(self):
-        return self.name
-
-    def __str__(self):
-        return self.name
+        return Tag.objects.all().filter(ladders=self)
 
 
 class Unit(models.Model):
@@ -262,7 +279,7 @@ class Comment(models.Model):
     unit = models.ForeignKey(Unit,verbose_name='ユニット',on_delete=models.CASCADE)
     user = models.ForeignKey(settings.AUTH_USER_MODEL,verbose_name='ユーザー',on_delete=models.CASCADE)
     text = models.TextField('コメント')
-    target = models.ForeignKey('self',verbose_name='親コメント',blank=True,null=True,on_delete=models.CASCADE)
+    target = models.ForeignKey('self',verbose_name='親コメント',null=True,blank=True,on_delete=models.CASCADE)
     created_at = models.DateTimeField('投稿日',default=timezone.now)
 
     def ___unicode__(self):
