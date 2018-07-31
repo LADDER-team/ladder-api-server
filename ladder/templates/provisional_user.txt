@@ -1,0 +1,1 @@
+localhost8000://api/user/complete/?token={{token}}

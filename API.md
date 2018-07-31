@@ -736,7 +736,7 @@ JWT認証が通ったユーザーのみ可能
 |unit|数値|○|コメントをつけたunitのid|
 |text|文字列|○|コメント本文|
 |target|数値||コメントに返信したときの返信先のコメントのid|
-####結果
+#### 結果
 ```
 {
     "id": 5,
@@ -755,7 +755,7 @@ tokenの取得
 |:-------|--|--|-------|
 |email|文字列|○|トークンを取得したいユーザーのメールアドレス|
 |password|文字列|○|トークンを取得したいユーザーのパスワード|
-####結果
+#### 結果
 ```{
     "token": "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJ1c2VyX2lkIjoxLCJ1c2VybmFtZSI6InBpbmtncmVlbjAzMDRAZ21haWwuY29tIiwiZXhwIjoxNTMyOTU5MTQ5LCJlbWFpbCI6InBpbmtncmVlbjAzMDRAZ21haWwuY29tIn0.fFwmr6h9dh9G69oKLTIIDAHcoeMhlkK9lEgUfQzuv0c"
 }

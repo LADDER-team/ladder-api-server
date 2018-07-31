@@ -8,12 +8,14 @@ from rest_framework.pagination import LimitOffsetPagination
 from rest_framework.response import Response
 from rest_framework.exceptions import ValidationError
 from django.shortcuts import render
-from rest_framework.decorators import action
+from rest_framework.decorators import action,api_view
 from django.utils import timezone
 from datetime import timedelta
 from django.template.loader import get_template
 from project import settings
 from django.core.mail import send_mail
+from django.core.signing import BadSignature, SignatureExpired, loads, dumps
+from django.http import HttpResponseBadRequest
 
 
 class IsOwnerOrReadOnly(permissions.BasePermission):
@@ -86,15 +88,29 @@ class UserViewSet(viewsets.ModelViewSet):
         self.perform_create(serializer)
         headers = self.get_success_headers(serializer.data)
 
-        subject = 'LADDER α版ユーザー登録完了のご案内'
-        mail_template = get_template('mail.txt')
+        subject = '仮登録完了'
+        mail_template = get_template('provisional_user.txt')
         user = User.objects.get(email=request.data['email'])
-        context ={'user':user,}
+        token = dumps(user.pk)
+        context = {
+            'user':user,
+            'token':token,
+        }
         message = mail_template.render(context)
         from_email = settings.common.EMAIL_HOST_USER
         send_mail(subject,message,from_email,[request.data['email']])
 
         return Response(serializer.data, status=status.HTTP_201_CREATED, headers=headers)
+
+        # subject = 'LADDER α版ユーザー登録完了のご案内'
+        # mail_template = get_template('mail.txt')
+        # user = User.objects.get(email=request.data['email'])
+        # context ={'user':user,}
+        # message = mail_template.render(context)
+        # from_email = settings.common.EMAIL_HOST_USER
+        # send_mail(subject,message,from_email,[request.data['email']])
+        #
+        # return Response(serializer.data, status=status.HTTP_201_CREATED, headers=headers)
 
     @action(methods=['get'],detail=True,url_path='learning-ladder')
     def get_learning_ladder(self,request,pk=None):
@@ -132,6 +148,44 @@ class UserViewSet(viewsets.ModelViewSet):
         else:
             permission_classes = [IsOwnerOrReadOnly]
         return [permission() for permission in permission_classes]
+
+
+    @action(methods=['GET'],detail=False,url_path='complete')
+    def complete_createuser(self,request):
+        token = request.GET.get('token')
+        try:
+            user_pk = loads(token, max_age=settings.common.ACTIVATION_TIMEOUT_SECONDS)
+            # 期限切れ
+        except SignatureExpired:
+            return HttpResponseBadRequest()
+
+            # tokenが間違っている
+        except BadSignature:
+            return HttpResponseBadRequest()
+
+            # tokenは問題なし
+        else:
+            try:
+                user = User.objects.get(pk=user_pk)
+            except User.DoenNotExist:
+                return HttpResponseBadRequest()
+            else:
+                if not user.is_active:
+                        # 問題なければ本登録とする
+                    user.is_active = True
+                    user.save()
+                    subject = 'LADDER α版ユーザー登録完了のご案内'
+                    mail_template = get_template('mail.txt')
+                    context ={'user':user,}
+                    message = mail_template.render(context)
+                    from_email = settings.common.EMAIL_HOST_USER
+                    send_mail(subject,message,from_email,[user.email])
+                    serializer = UserSerializer(user)
+
+                    return Response(serializer.data)
+
+        return HttpResponseBadRequest()
+
 
 
 class UnitViewSet(RequestUserPutView):

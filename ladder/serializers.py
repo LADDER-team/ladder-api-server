@@ -68,7 +68,7 @@ class LadderSerializer(serializers.ModelSerializer):
 
     units = UnitSerializer(many=True)
     tags = TagSerializer(many=True)
-    
+
     recommended_prev_ladder = serializers.SerializerMethodField()
     recommended_next_ladder = serializers.SerializerMethodField()
     count_finish_number = serializers.SerializerMethodField()
