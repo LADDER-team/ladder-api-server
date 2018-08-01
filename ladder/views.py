@@ -1,4 +1,4 @@
-from rest_framework import status,viewsets,filters,permissions,authentication
+from rest_framework import status,viewsets,filters,permissions,authentication,generics
 from .models import Tag,User,Ladder,Unit,Link,LearningStatus,Comment
 from .serializers import TagSerializer,LadderSerializer,UserSerializer,UnitSerializer,LinkSerializer,LearningStatusSerializer,CommentSerializer
 from django_filters import rest_framework as filters
@@ -8,7 +8,7 @@ from rest_framework.pagination import LimitOffsetPagination
 from rest_framework.response import Response
 from rest_framework.exceptions import ValidationError
 from django.shortcuts import render
-from rest_framework.decorators import action,api_view
+from rest_framework.decorators import action,api_view,permission_classes
 from django.utils import timezone
 from datetime import timedelta
 from django.template.loader import get_template
@@ -174,6 +174,7 @@ class UserViewSet(viewsets.ModelViewSet):
                         # 問題なければ本登録とする
                     user.is_active = True
                     user.save()
+
                     subject = 'LADDER α版ユーザー登録完了のご案内'
                     mail_template = get_template('mail.txt')
                     context ={'user':user,}
@@ -185,6 +186,8 @@ class UserViewSet(viewsets.ModelViewSet):
                     return Response(serializer.data)
 
         return HttpResponseBadRequest()
+
+
 
 
 
@@ -225,6 +228,55 @@ class CommentViewSet(RequestUserPutView):
     permission_classes = (IsAuthenticatedOrReadOnly,IsOwnerOrReadOnly)
 
 
+@api_view(['POST'])
+@permission_classes([AllowAny])
+def passreset_mail(request):
+    email = request.data['email']
+    user = User.objects.get(email=email)
+    token = dumps(user.pk)
+
+    subject = 'パスワードリセットの確認'
+    mail_template = get_template('password_reset.txt')
+    context ={'user':user,'token':token}
+    message = mail_template.render(context)
+    from_email = settings.common.EMAIL_HOST_USER
+    send_mail(subject,message,from_email,[user.email])
+    serializer = UserSerializer(user)
+
+    return Response({'message':'send email'})
+
+
+@api_view(['POST'])
+@permission_classes([AllowAny])
+def passreset_confirm(request):
+    token = request.data['token']
+    try:
+        user_pk = loads(token, max_age=settings.common.ACTIVATION_TIMEOUT_SECONDS)
+        # 期限切れ
+    except SignatureExpired:
+        return HttpResponseBadRequest()
+
+        # tokenが間違っている
+    except BadSignature:
+        return HttpResponseBadRequest()
+
+        # tokenは問題なし
+    else:
+        try:
+            user = User.objects.get(pk=user_pk)
+        except User.DoenNotExist:
+            return HttpResponseBadRequest()
+        else:
+            serializer = UserSerializer(user,data=request.data,partial=True)
+            serializer.is_valid(raise_exception=True)
+            serializer.save()
+
+            if getattr(user, '_prefetched_objects_cache', None):
+                instance._prefetched_objects_cache = {}
+
+            return Response(serializer.data)
+
+    return HttpResponseBadRequest()
 
 def index(request):
     return render(request, 'index.html', {})

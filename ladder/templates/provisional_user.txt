@@ -1,1 +1,1 @@
-localhost8000://api/user/complete/?token={{token}}
+localhost:8000/api/user/complete/?token={{token}}
