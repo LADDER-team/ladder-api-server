@@ -102,16 +102,6 @@ class UserViewSet(viewsets.ModelViewSet):
 
         return Response(serializer.data, status=status.HTTP_201_CREATED, headers=headers)
 
-        # subject = 'LADDER α版ユーザー登録完了のご案内'
-        # mail_template = get_template('mail.txt')
-        # user = User.objects.get(email=request.data['email'])
-        # context ={'user':user,}
-        # message = mail_template.render(context)
-        # from_email = settings.common.EMAIL_HOST_USER
-        # send_mail(subject,message,from_email,[request.data['email']])
-        #
-        # return Response(serializer.data, status=status.HTTP_201_CREATED, headers=headers)
-
     @action(methods=['get'],detail=True,url_path='learning-ladder')
     def get_learning_ladder(self,request,pk=None):
         ladder_list = []
@@ -254,29 +244,34 @@ def passreset_confirm(request):
         user_pk = loads(token, max_age=settings.common.ACTIVATION_TIMEOUT_SECONDS)
         # 期限切れ
     except SignatureExpired:
-        return HttpResponseBadRequest()
+        return Response({{"message":"token timeout"}},status=status.HTTP_400_BAD_REQUEST)
 
         # tokenが間違っている
     except BadSignature:
-        return HttpResponseBadRequest()
+        return Response({{"message":"token is bad"}},status=status.HTTP_400_BAD_REQUEST)
 
         # tokenは問題なし
     else:
         try:
             user = User.objects.get(pk=user_pk)
         except User.DoenNotExist:
-            return HttpResponseBadRequest()
+            return Response({{"message":"user does not exist"}},status=status.HTTP_400_BAD_REQUEST)
         else:
-            serializer = UserSerializer(user,data=request.data,partial=True)
-            serializer.is_valid(raise_exception=True)
-            serializer.save()
+            try:
+                password_data = request.data['password']
+                serializer = UserSerializer(user,data=password_data,partial=True)
+                serializer.is_valid(raise_exception=True)
+                serializer.save()
 
-            if getattr(user, '_prefetched_objects_cache', None):
-                instance._prefetched_objects_cache = {}
+                if getattr(user, '_prefetched_objects_cache', None):
+                    instance._prefetched_objects_cache = {}
 
-            return Response(serializer.data)
+                return Response(serializer.data)
+            except:
+                return Response({"message":"must set to password"},status=status.HTTP_400_BAD_REQUEST)
 
-    return HttpResponseBadRequest()
+
+    return Response({{"message":"bad request"}},status=status.HTTP_400_BAD_REQUEST)
 
 def index(request):
     return render(request, 'index.html', {})
