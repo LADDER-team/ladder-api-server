@@ -7,7 +7,7 @@ from rest_framework.authentication import BasicAuthentication,TokenAuthenticatio
 from rest_framework.pagination import LimitOffsetPagination
 from rest_framework.response import Response
 from rest_framework.exceptions import ValidationError
-from django.shortcuts import render
+from django.shortcuts import render,get_object_or_404
 from rest_framework.decorators import action,api_view,permission_classes
 from django.utils import timezone
 from datetime import timedelta
@@ -106,12 +106,15 @@ class UserViewSet(viewsets.ModelViewSet):
     def get_learning_ladder(self,request,pk=None):
         ladder_list = []
         for ls in LearningStatus.objects.all().filter(user=pk):
-            if ls.unit.index == 1:
-                unit_list =ls.ladder.get_unit()
-                last_unit = unit_list[-1]
-                last_unit_ls = LearningStatus.objects.filter(user=pk).get(unit=last_unit)
-                if last_unit_ls.status == False:
-                    ladder_list.append({'id':ls.ladder.id})
+            # if ls.unit.index == 1:
+            #     unit_list =ls.ladder.get_unit()
+            #     last_unit = unit_list[-1]
+            #     last_unit_ls = LearningStatus.objects.filter(user=pk).get(unit=last_unit)
+            #     if last_unit_ls.status == False:
+            #         ladder_list.append(ls)
+            if ls.ladder.get_learning(user=pk) and ls.unit.index == 1:
+                serializer = LadderSerializer(ls.ladder)
+                ladder_list.append(serializer.data)
 
         return Response(ladder_list)
 
@@ -119,9 +122,12 @@ class UserViewSet(viewsets.ModelViewSet):
     def get_finish_ladder(self,request,pk=None):
         ladder_list =[]
         for ls in LearningStatus.objects.all().filter(user=pk):
-            index = ls.unit.index
-            if index == ls.ladder.units_number() and ls.status == True:
-                ladder_list.append({'id':ls.ladder.id})
+            # index = ls.unit.index
+            # if index == ls.ladder.units_number() and ls.status == True:
+            #     ladder_list.append({'id':ls.ladder.id})
+            if ls.ladder.get_finish(user=pk) and ls.unit.index == 1:
+                serializer = LadderSerializer(ls.ladder)
+                ladder_list.append(serializer.data)
 
         return Response(ladder_list)
 
@@ -222,7 +228,7 @@ class CommentViewSet(RequestUserPutView):
 @permission_classes([AllowAny])
 def passreset_mail(request):
     email = request.data['email']
-    user = User.objects.get(email=email)
+    user = get_object_or_404(User,email=email)
     token = dumps(user.pk)
 
     subject = 'パスワードリセットの確認'
