@@ -1,4 +1,4 @@
-from rest_framework import status,viewsets,filters,permissions,authentication
+from rest_framework import status,viewsets,filters,permissions,authentication,generics
 from .models import Tag,User,Ladder,Unit,Link,LearningStatus,Comment
 from .serializers import TagSerializer,LadderSerializer,UserSerializer,UnitSerializer,LinkSerializer,LearningStatusSerializer,CommentSerializer
 from django_filters import rest_framework as filters
@@ -7,13 +7,15 @@ from rest_framework.authentication import BasicAuthentication,TokenAuthenticatio
 from rest_framework.pagination import LimitOffsetPagination
 from rest_framework.response import Response
 from rest_framework.exceptions import ValidationError
-from django.shortcuts import render
-from rest_framework.decorators import action
+from django.shortcuts import render,get_object_or_404
+from rest_framework.decorators import action,api_view,permission_classes
 from django.utils import timezone
 from datetime import timedelta
 from django.template.loader import get_template
 from project import settings
 from django.core.mail import send_mail
+from django.core.signing import BadSignature, SignatureExpired, loads, dumps
+from django.http import HttpResponseBadRequest
 
 
 class IsOwnerOrReadOnly(permissions.BasePermission):
@@ -86,10 +88,14 @@ class UserViewSet(viewsets.ModelViewSet):
         self.perform_create(serializer)
         headers = self.get_success_headers(serializer.data)
 
-        subject = 'LADDER α版ユーザー登録完了のご案内'
-        mail_template = get_template('mail.txt')
+        subject = '仮登録完了'
+        mail_template = get_template('provisional_user.txt')
         user = User.objects.get(email=request.data['email'])
-        context ={'user':user,}
+        token = dumps(user.pk)
+        context = {
+            'user':user,
+            'token':token,
+        }
         message = mail_template.render(context)
         from_email = settings.common.EMAIL_HOST_USER
         send_mail(subject,message,from_email,[request.data['email']])
@@ -100,12 +106,15 @@ class UserViewSet(viewsets.ModelViewSet):
     def get_learning_ladder(self,request,pk=None):
         ladder_list = []
         for ls in LearningStatus.objects.all().filter(user=pk):
-            if ls.unit.index == 1:
-                unit_list =ls.ladder.get_unit()
-                last_unit = unit_list[-1]
-                last_unit_ls = LearningStatus.objects.filter(user=pk).get(unit=last_unit)
-                if last_unit_ls.status == False:
-                    ladder_list.append({'id':ls.ladder.id})
+            # if ls.unit.index == 1:
+            #     unit_list =ls.ladder.get_unit()
+            #     last_unit = unit_list[-1]
+            #     last_unit_ls = LearningStatus.objects.filter(user=pk).get(unit=last_unit)
+            #     if last_unit_ls.status == False:
+            #         ladder_list.append(ls)
+            if ls.ladder.get_learning(user=pk) and ls.unit.index == 1:
+                serializer = LadderSerializer(ls.ladder)
+                ladder_list.append(serializer.data)
 
         return Response(ladder_list)
 
@@ -113,9 +122,12 @@ class UserViewSet(viewsets.ModelViewSet):
     def get_finish_ladder(self,request,pk=None):
         ladder_list =[]
         for ls in LearningStatus.objects.all().filter(user=pk):
-            index = ls.unit.index
-            if index == ls.ladder.units_number() and ls.status == True:
-                ladder_list.append({'id':ls.ladder.id})
+            # index = ls.unit.index
+            # if index == ls.ladder.units_number() and ls.status == True:
+            #     ladder_list.append({'id':ls.ladder.id})
+            if ls.ladder.get_finish(user=pk) and ls.unit.index == 1:
+                serializer = LadderSerializer(ls.ladder)
+                ladder_list.append(serializer.data)
 
         return Response(ladder_list)
 
@@ -132,6 +144,47 @@ class UserViewSet(viewsets.ModelViewSet):
         else:
             permission_classes = [IsOwnerOrReadOnly]
         return [permission() for permission in permission_classes]
+
+
+    @action(methods=['GET'],detail=False,url_path='complete')
+    def complete_createuser(self,request):
+        token = request.GET.get('token')
+        try:
+            user_pk = loads(token, max_age=settings.common.ACTIVATION_TIMEOUT_SECONDS)
+            # 期限切れ
+        except SignatureExpired:
+            return HttpResponseBadRequest()
+
+            # tokenが間違っている
+        except BadSignature:
+            return HttpResponseBadRequest()
+
+            # tokenは問題なし
+        else:
+            try:
+                user = User.objects.get(pk=user_pk)
+            except User.DoenNotExist:
+                return HttpResponseBadRequest()
+            else:
+                if not user.is_active:
+                        # 問題なければ本登録とする
+                    user.is_active = True
+                    user.save()
+
+                    subject = 'LADDER α版ユーザー登録完了のご案内'
+                    mail_template = get_template('mail.txt')
+                    context ={'user':user,}
+                    message = mail_template.render(context)
+                    from_email = settings.common.EMAIL_HOST_USER
+                    send_mail(subject,message,from_email,[user.email])
+                    serializer = UserSerializer(user)
+
+                    return Response(serializer.data)
+
+        return HttpResponseBadRequest()
+
+
+
 
 
 class UnitViewSet(RequestUserPutView):
@@ -171,6 +224,60 @@ class CommentViewSet(RequestUserPutView):
     permission_classes = (IsAuthenticatedOrReadOnly,IsOwnerOrReadOnly)
 
 
+@api_view(['POST'])
+@permission_classes([AllowAny])
+def passreset_mail(request):
+    email = request.data['email']
+    user = get_object_or_404(User,email=email)
+    token = dumps(user.pk)
+
+    subject = 'パスワードリセットの確認'
+    mail_template = get_template('password_reset.txt')
+    context ={'user':user,'token':token}
+    message = mail_template.render(context)
+    from_email = settings.common.EMAIL_HOST_USER
+    send_mail(subject,message,from_email,[user.email])
+    serializer = UserSerializer(user)
+
+    return Response({'message':'send email'})
+
+
+@api_view(['POST'])
+@permission_classes([AllowAny])
+def passreset_confirm(request):
+    token = request.data['token']
+    try:
+        user_pk = loads(token, max_age=settings.common.ACTIVATION_TIMEOUT_SECONDS)
+        # 期限切れ
+    except SignatureExpired:
+        return Response({{"message":"token timeout"}},status=status.HTTP_400_BAD_REQUEST)
+
+        # tokenが間違っている
+    except BadSignature:
+        return Response({{"message":"token is bad"}},status=status.HTTP_400_BAD_REQUEST)
+
+        # tokenは問題なし
+    else:
+        try:
+            user = User.objects.get(pk=user_pk)
+        except User.DoenNotExist:
+            return Response({{"message":"user does not exist"}},status=status.HTTP_400_BAD_REQUEST)
+        else:
+            try:
+                password_data = request.data['password']
+                serializer = UserSerializer(user,data=password_data,partial=True)
+                serializer.is_valid(raise_exception=True)
+                serializer.save()
+
+                if getattr(user, '_prefetched_objects_cache', None):
+                    instance._prefetched_objects_cache = {}
+
+                return Response(serializer.data)
+            except:
+                return Response({"message":"must set to password"},status=status.HTTP_400_BAD_REQUEST)
+
+
+    return Response({{"message":"bad request"}},status=status.HTTP_400_BAD_REQUEST)
 
 def index(request):
     return render(request, 'index.html', {})

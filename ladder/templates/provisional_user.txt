@@ -1,0 +1,4 @@
+こんにちは{{user.name}}さん
+ladderに登録していただいたメールアドレスの確認のため、
+24時間以内に以下のURLにアクセスし登録を完了してください。
+localhost:8000/api/user/complete/?token={{token}}

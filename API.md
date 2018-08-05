@@ -218,7 +218,7 @@
 ]
 ```
 ### GET users/:id/finish-ladder/
-指定されたidのユーザーの学習済みのladderのリストを返す
+指定されたidのユーザーの学習済みのladderのidのリストを返す
 #### 結果
 ```
 [
@@ -230,6 +230,38 @@
     }
 ]
 ```
+### GET users/:id/my-ladder/ 
+指定されたidのユーザーの投稿したladderのリストを返す
+#### 結果
+```
+[
+    {
+        "id": 14,
+        "title": "python",
+        "user": "",
+        "created_at": "2018-07-30T13:59:56.366630Z"
+    }
+]
+```
+### GET users/complete/
+仮登録後、登録されたメールアドレスに確認用メールを送信し、このURLにアクセスすることでactive状態にする。
+#### クエリパラメータ
+|名前|型|必須|値の説明|　
+|:-|-|-|:-|
+|token|文字列|○|ユーザーを認証するためのtoken|
+#### 結果
+```
+{
+    "id": 30,
+    "name": "test君",
+    "icon": null,
+    "profile": "",
+    "my_link": [],
+    "my_ladders": []
+}
+```
+
+
 ---
 ### GET ladder/
 公開状態がTrueのladderの一覧を返す
@@ -736,7 +768,8 @@ JWT認証が通ったユーザーのみ可能
 |unit|数値|○|コメントをつけたunitのid|
 |text|文字列|○|コメント本文|
 |target|数値||コメントに返信したときの返信先のコメントのid|
-####結果
+
+#### 結果
 ```
 {
     "id": 5,
@@ -755,8 +788,40 @@ tokenの取得
 |:-------|--|--|-------|
 |email|文字列|○|トークンを取得したいユーザーのメールアドレス|
 |password|文字列|○|トークンを取得したいユーザーのパスワード|
-####結果
+
+#### 結果
 ```{
     "token": "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJ1c2VyX2lkIjoxLCJ1c2VybmFtZSI6InBpbmtncmVlbjAzMDRAZ21haWwuY29tIiwiZXhwIjoxNTMyOTU5MTQ5LCJlbWFpbCI6InBpbmtncmVlbjAzMDRAZ21haWwuY29tIn0.fFwmr6h9dh9G69oKLTIIDAHcoeMhlkK9lEgUfQzuv0c"
+}
+```
+---
+### POST password/reset/
+パスワードを忘れた場合のpassword再設定のためのメール送信
+#### 入力
+|JSON key|型|必須|値の説明|
+|:-|-|-|:-|
+|email|文字列|○|登録したメールアドレス|
+#### 結果
+```
+{
+    "message": "send email"
+}
+```
+
+### POST password/reset/confirm/
+passwordの再設定を完了させる
+#### 入力
+|JSON key|型|必須|値の説明|
+|:-|-|-|:-|
+|password|文字列|必須|新しいパスワード|
+#### 結果
+```
+{
+    "id": 30,
+    "name": "test君",
+    "icon": null,
+    "profile": "",
+    "my_link": [],
+    "my_ladders": []
 }
 ```

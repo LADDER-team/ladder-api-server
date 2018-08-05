@@ -82,7 +82,7 @@ class User(AbstractBaseUser, PermissionsMixin):
     )
     is_active = models.BooleanField(
         _('active'),
-        default=True,
+        default=False,
         help_text=_(
             'Designates whether this user should be treated as active. '
             'Unselect this instead of deleting accounts.'
@@ -182,31 +182,50 @@ class Ladder(models.Model):
             return next_list
 
     def count_finish_number(self):
-        units_list = self.get_unit()
         try:
-            unit = units_list[-1]
-            count = 0
-            for ladder in LearningStatus.objects.filter(unit=unit):
-                count += ladder.status
-            return count
+            unit_list = self.get_unit()
+            unit = unit_list[-1]
+            return LearningStatus.objects.filter(unit=unit).count()
         except:
             return 0
 
     def count_learning_number(self):
         try:
-            units_list = self.get_unit()
-            first_unit = units_list[0]
-            return LearningStatus.objects.all().filter(unit=first_unit).count()
+            unit_list = self.get_unit()
+            first_unit = unit_list[0]
+            return LearningStatus.objects.filter(unit=first_unit).count() - self.count_finish_number()
         except:
-            return 0;
+            return 0
 
     def units_number(self):
-        units_list = self.get_unit()
-        last_unit = units_list[-1]
+        unit_list = self.get_unit()
+        last_unit = unit_list[-1]
         return last_unit.index
 
     def get_tags(self):
         return Tag.objects.all().filter(ladders=self)
+
+    def get_learning(self,user):
+        try:
+            unit_list = self.get_unit()
+            first_unit = unit_list[0]
+            first_status = LearningStatus.objects.filter(unit=first_unit).filter(user=user)
+            return 1
+        except:
+            return 0
+
+    def get_finish(self,user):
+        try:
+            unit_list = self.get_unit()
+            last_unit = unit_list[-1]
+            last_status = LearningStatus.objects.get(user=user,unit=last_unit)
+            if last_status.status == 1:
+                return 1
+            else:
+                return 0
+        except:
+            return 0
+
 
 
 class Unit(models.Model):
