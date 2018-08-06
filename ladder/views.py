@@ -20,7 +20,7 @@ from rest_framework import filters
 from functools import reduce
 import operator
 from django.db.models import Q
-from typing import List
+
 
 
 def parse_params(words):

@@ -1,6 +1,6 @@
 # API仕様書
 ---
-## https://api/
+## https://api.ladder.noframeschools.com/api/
 ### 共通
 ```Content-Type: application/json```
 
@@ -230,7 +230,7 @@
     }
 ]
 ```
-### GET users/:id/my-ladder/ 
+### GET users/:id/my-ladder/
 指定されたidのユーザーの投稿したladderのリストを返す
 #### 結果
 ```
@@ -270,6 +270,7 @@
 |:-|-|-|:-|
 |limit|数値|　|何件取得するかの指定（指定なしは100件）|
 |offset|数値||何件目から切り出すかの指定|
+|q|文字列||ladderのtitle,unitのtitle,unitのdescriptionのいずれかにキーワードが含まれるladderを返す。空白をデリミタとしてAND検索。|
 #### 結果
 ```
 {
