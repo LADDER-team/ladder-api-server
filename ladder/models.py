@@ -145,6 +145,7 @@ class Ladder(models.Model):
     update_at = models.DateTimeField('更新日',auto_now=True)
     is_public = models.BooleanField('公開設定',default=True)
     tags = models.ManyToManyField(Tag,related_name='tag',blank=True)
+    ladder_description = models.TextField('ladderの説明',default=None,null=True)
 
     class Meta:
         unique_together = ('user','title')
