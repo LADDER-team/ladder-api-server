@@ -77,7 +77,7 @@ class LadderSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Ladder
-        fields = ('id','title','is_public','user','created_at','tags','update_at','units','recommended_prev_ladder','recommended_next_ladder','count_learning_number','count_finish_number')
+        fields = ('id','title','is_public','user','created_at','tags','update_at','ladder_description','units','recommended_prev_ladder','recommended_next_ladder','count_learning_number','count_finish_number')
 
     def create(self, validated_data):
         units_data = validated_data.pop('units')

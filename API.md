@@ -284,6 +284,7 @@
           "is_public": true,
           "user": 2,
           "tags": [],
+          "ladder_description": "test",
           "created_at": "2018-07-15T00:52:14.511474Z",
           "update_at": "2018-07-15T00:52:14.511501Z",
           "units": [],
@@ -298,6 +299,7 @@
           "is_public": true,
           "user": 2,
           "tags": [],
+          "ladder_description": "test",
           "created_at": "2018-07-15T11:37:40.463821Z",
           "update_at": "2018-07-15T11:37:40.463852Z",
           "units": [
@@ -323,101 +325,6 @@
           "count_learning_number": 0,
           "count_finish_number": 1
       },
-      {
-          "id": 1,
-          "title": "pypython",
-          "is_public": true,
-          "user": 2,
-          "tags": [
-              3,
-              4
-          ],
-          "created_at": "2018-07-14T15:59:51.940872Z",
-          "update_at": "2018-07-16T07:55:06.557699Z",
-          "units": [
-              {
-                  "id": 3,
-                  "title": "python勉強",
-                  "description": "test",
-                  "ladder": 1,
-                  "url": "https://qiita.com",
-                  "index": 3
-              },
-              {
-                  "id": 2,
-                  "title": "pypython",
-                  "description": "test2",
-                  "ladder": 1,
-                  "url": "https://test.com",
-                  "index": 2
-              },
-              {
-                  "id": 1,
-                  "title": "pythoon",
-                  "description": "test",
-                  "ladder": 1,
-                  "url": "https://qiita.com",
-                  "index": 1
-              }
-          ],
-          "recommended_prev_ladder": null,
-          "recommended_next_ladder": null,
-          "count_learning_number": 2,
-          "count_finish_number": 0
-      },
-      {
-          "id": 7,
-          "title": "python入門",
-          "is_public": true,
-          "user": 3,
-          "tags": [
-              3
-          ],
-          "created_at": "2018-07-15T12:09:43.787345Z",
-          "update_at": "2018-07-16T08:02:21.956610Z",
-          "units": [],
-          "recommended_prev_ladder": null,
-          "recommended_next_ladder": null,
-          "count_learning_number": 0,
-          "count_finish_number": 0
-      },
-      {
-          "id": 8,
-          "title": "test",
-          "is_public": true,
-          "user": 2,
-          "tags": [],
-          "created_at": "2018-07-18T05:50:46.496288Z",
-          "update_at": "2018-07-18T05:50:46.496309Z",
-          "units": [
-              {
-                  "id": 5,
-                  "title": "test",
-                  "description": "test",
-                  "ladder": 8,
-                  "url": "https://ladder.com",
-                  "index": 1
-              }
-          ],
-          "recommended_prev_ladder": null,
-          "recommended_next_ladder": null,
-          "count_learning_number": 0,
-          "count_finish_number": 0
-      },
-      {
-          "id": 9,
-          "title": "aaa",
-          "is_public": true,
-          "user": 2,
-          "tags": [],
-          "created_at": "2018-07-19T12:17:52.984974Z",
-          "update_at": "2018-07-19T12:17:52.984995Z",
-          "units": [],
-          "recommended_prev_ladder": null,
-          "recommended_next_ladder": null,
-          "count_learning_number": 0,
-          "count_finish_number": 0
-      }
     ]
 }
 ```
@@ -444,6 +351,7 @@ JWT認証が通ったユーザーのみ可能
         4,
         3
     ],
+    "ladder_description": "test",
     "created_at": "2018-07-23T01:34:37.188578Z",
     "update_at": "2018-07-23T01:34:37.209490Z",
     "units": [],
