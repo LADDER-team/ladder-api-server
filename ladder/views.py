@@ -16,6 +16,16 @@ from project import settings
 from django.core.mail import send_mail
 from django.core.signing import BadSignature, SignatureExpired, loads, dumps
 from django.http import HttpResponseBadRequest
+from rest_framework import filters
+from functools import reduce
+import operator
+from django.db.models import Q
+
+
+
+def parse_params(words):
+    search_words = words.replace('　',' ').split()
+    return search_words
 
 
 class IsOwnerOrReadOnly(permissions.BasePermission):
@@ -52,10 +62,19 @@ class RequestUserPutView(viewsets.ModelViewSet):
 
 
 class LadderViewSet(RequestUserPutView,permissions.BasePermission):
-    queryset = Ladder.objects.all().filter(is_public=True)
     serializer_class = LadderSerializer
     permission_classes = (IsOwnerOrReadOnly,)
     pagenation = (LimitOffsetPagination,)
+
+    def get_queryset(self):
+        queryset = Ladder.objects.all().filter(is_public=True)
+        params = self.request.query_params.get('q',None)
+        if params is not None:
+            q = parse_params(params)
+            query = reduce(operator.and_, (Q(title__icontains=w) | Q(units__description__icontains=w) |Q(units__title__icontains=w) for w in q))
+            queryset = queryset.filter(query).distinct()
+        return queryset
+
 
     @action(methods=['get'],detail=False)
     def ranking(self,request):
@@ -106,12 +125,6 @@ class UserViewSet(viewsets.ModelViewSet):
     def get_learning_ladder(self,request,pk=None):
         ladder_list = []
         for ls in LearningStatus.objects.all().filter(user=pk):
-            # if ls.unit.index == 1:
-            #     unit_list =ls.ladder.get_unit()
-            #     last_unit = unit_list[-1]
-            #     last_unit_ls = LearningStatus.objects.filter(user=pk).get(unit=last_unit)
-            #     if last_unit_ls.status == False:
-            #         ladder_list.append(ls)
             if ls.ladder.get_learning(user=pk) and ls.unit.index == 1:
                 serializer = LadderSerializer(ls.ladder)
                 ladder_list.append(serializer.data)
@@ -122,9 +135,6 @@ class UserViewSet(viewsets.ModelViewSet):
     def get_finish_ladder(self,request,pk=None):
         ladder_list =[]
         for ls in LearningStatus.objects.all().filter(user=pk):
-            # index = ls.unit.index
-            # if index == ls.ladder.units_number() and ls.status == True:
-            #     ladder_list.append({'id':ls.ladder.id})
             if ls.ladder.get_finish(user=pk) and ls.unit.index == 1:
                 serializer = LadderSerializer(ls.ladder)
                 ladder_list.append(serializer.data)
