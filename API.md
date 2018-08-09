@@ -703,6 +703,19 @@ tokenの取得
     "token": "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJ1c2VyX2lkIjoxLCJ1c2VybmFtZSI6InBpbmtncmVlbjAzMDRAZ21haWwuY29tIiwiZXhwIjoxNTMyOTU5MTQ5LCJlbWFpbCI6InBpbmtncmVlbjAzMDRAZ21haWwuY29tIn0.fFwmr6h9dh9G69oKLTIIDAHcoeMhlkK9lEgUfQzuv0c"
 }
 ```
+
+### POST api-token-refresh/
+tokenのリフレッシュ
+#### 入力
+|JSON key|型|必須|値の説明|
+|:-|-|-|:-|
+|token|文字列|○|リフレッシュしたいtoken|
+
+#### 結果
+```{
+    "token": "eyJ0eXAiOiJKV1QiLCJhbGciOiJIsfuh1NiJ9.eyJ1c2VyX2lkIjoLCJ1c2VybmFtZSI6InBpbmtncmVlbjAzMDRAZ21haWwuY29tIiwiZXhwIjoxNTMyTU5MTfsi8LCJlbWFpbCI6InBpbmtncmVlbjAzMDRAZ21haWwuY29tn0.fFwmr6h9dh9G69oKLTIIDAHcoeMhlkK9lEgUfQzuv0c"
+}
+```
 ---
 ### POST password/reset/
 パスワードを忘れた場合のpassword再設定のためのメール送信
