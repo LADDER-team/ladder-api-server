@@ -215,7 +215,7 @@ class Unit(models.Model):
     title = models.CharField('タイトル',max_length=40)
     description = models.TextField('説明文')
     ladder = models.ForeignKey(Ladder,related_name='units',on_delete=models.CASCADE)
-    url = models.URLField('URL')
+    url = models.URLField('URL',max_length=500)
     index = models.PositiveIntegerField('番号')
 
     class Meta:
