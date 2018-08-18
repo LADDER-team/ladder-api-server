@@ -189,7 +189,7 @@ class Ladder(models.Model):
         try:
             unit_list = self.get_unit()
             unit = unit_list[-1]
-            return LearningStatus.objects.filter(unit=unit).count()
+            return LearningStatus.objects.filter(unit=unit).filter(status=1).count()
         except:
             return 0
 
@@ -209,14 +209,6 @@ class Ladder(models.Model):
     def get_tags(self):
         return Tag.objects.all().filter(ladders=self)
 
-    def get_learning(self,user):
-        try:
-            unit_list = self.get_unit()
-            first_unit = unit_list[0]
-            first_status = LearningStatus.objects.filter(unit=first_unit).filter(user=user)
-            return 1
-        except:
-            return 0
 
     def get_finish(self,user):
         try:
@@ -227,6 +219,18 @@ class Ladder(models.Model):
                 return 1
             else:
                 return 0
+        except:
+            return 0
+
+    def get_learning(self,user):
+        try:
+            if self.get_finish(user):
+                return 0
+            else:
+                unit_list = self.get_unit()
+                first_unit = unit_list[0]
+                first_status = LearningStatus.objects.filter(unit=first_unit).filter(user=user)
+            return 1
         except:
             return 0
 
