@@ -209,6 +209,31 @@ class Ladder(models.Model):
     def get_tags(self):
         return Tag.objects.all().filter(ladders=self)
 
+    def get_finish(self,user):
+        try:
+            unit_list = self.get_unit()
+            last_unit = unit_list[-1]
+            last_status = LearningStatus.objects.get(user=user,unit=last_unit)
+            if last_status.status == 1:
+                return 1
+            else:
+                return 0
+        except:
+            return 0
+
+    def get_learning(self,user):
+        try:
+            if self.get_finish(user):
+                return 0
+            else:
+                unit_list = self.get_unit()
+                first_unit = unit_list[0]
+                first_status = LearningStatus.objects.filter(unit=first_unit).filter(user=user)
+            return 1
+        except:
+            return 0
+
+
 
 class Unit(models.Model):
     """ユニット"""
