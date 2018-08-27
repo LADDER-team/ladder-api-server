@@ -109,22 +109,25 @@ class UserViewSet(viewsets.ModelViewSet):
 
         return Response(ladder_list)
 
+    @action(methods=['get'],detail=True,url_path='learning-ladder')
+    def get_learning_ladder(self,request,pk=None):
+        ladder_list = []
+        for ls in LearningStatus.objects.all().filter(user=pk):
+            if ls.ladder.get_learning(user=pk) and ls.unit.index == 1:
+                serializer = LadderSerializer(ls.ladder)
+                ladder_list.append(serializer.data)
+
+        return Response(ladder_list)
+
     @action(methods=['get'],detail=True,url_path='finish-ladder')
     def get_finish_ladder(self,request,pk=None):
         ladder_list =[]
         for ls in LearningStatus.objects.all().filter(user=pk):
-            index = ls.unit.index
-            if index == ls.ladder.units_number() and ls.status == True:
-                ladder_list.append({'id':ls.ladder.id})
+            if ls.ladder.get_finish(user=pk) and ls.unit.index == 1:
+                serializer = LadderSerializer(ls.ladder)
+                ladder_list.append(serializer.data)
 
         return Response(ladder_list)
-
-    @action(methods=['get'],detail=True,url_path='my-ladder')
-    def get_my_ladders(self,request,pk=None):
-        user = User.objects.get(id=pk)
-        serializer = UserSerializer(user)
-
-        return Response(serializer.data['my_ladders'])
 
     def get_permissions(self):
         if self.action in ('list','retrieve','create'):
