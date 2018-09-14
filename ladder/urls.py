@@ -9,7 +9,7 @@ router.register(r'ladder', LadderViewSet)
 router.register(r'unit', UnitViewSet)
 router.register(r'tag', TagViewSet)
 router.register(r'link', LinkViewSet)
-router.register(r'learningstatus', LearningStatusViewSet)
+router.register(r'learningstatus', LearningStatusViewSet,base_name='learningstatus')
 router.register(r'comments',CommentViewSet)
 
 urlpatterns = [

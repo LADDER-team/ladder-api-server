@@ -163,9 +163,20 @@ class LinkViewSet(RequestUserPutView):
 
 
 class LearningStatusViewSet(RequestUserPutView):
-    queryset = LearningStatus.objects.all()
     serializer_class = LearningStatusSerializer
     permission_classes = (IsAuthenticatedOrReadOnly,IsOwnerOrReadOnly)
+
+    def get_queryset(self):
+        queryset = LearningStatus.objects.all()
+        user_id = self.request.query_params.get('user',None)
+        ladder_id = self.request.query_params.get('ladder',None)
+
+        if user_id is not None:
+            queryset = queryset.filter(user=user_id)
+        elif ladder_id is not None:
+            queryset = queryset.filter(unit__ladder=ladder_id)
+
+        return queryset
 
 
 class CommentViewSet(RequestUserPutView):
