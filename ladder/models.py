@@ -210,16 +210,17 @@ class Ladder(models.Model):
         return Tag.objects.all().filter(ladders=self)
 
     def get_finish(self,user):
-        try:
-            unit_list = self.get_unit()
-            last_unit = unit_list[-1]
-            last_status = LearningStatus.objects.get(user=user,unit=last_unit)
-            if last_status.status == 1:
-                return 1
-            else:
-                return 0
-        except:
+        units_list = self.get_unit()
+        finish_unit_number = 0
+        learningstatus_list = LearningStatus.objects.all().filter(user=user).filter(unit__ladder=self)
+        for learningstatus in learningstatus_list:
+            finish_unit_number += learningstatus.status
+
+        if finish_unit_number == self.units_number():
+            return 1
+        else:
             return 0
+
 
     def get_learning(self,user):
         try:
