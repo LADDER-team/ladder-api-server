@@ -173,7 +173,7 @@ class LearningStatusViewSet(RequestUserPutView):
 
         if user_id is not None:
             queryset = queryset.filter(user=user_id)
-        elif ladder_id is not None:
+        if ladder_id is not None:
             queryset = queryset.filter(unit__ladder=ladder_id)
 
         return queryset
