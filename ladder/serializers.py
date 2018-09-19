@@ -30,11 +30,11 @@ class UserSerializer(serializers.ModelSerializer):
         validated_data['password'] = make_password(password)
         return User.objects.create(**validated_data)
 
-    def update(self,instance,validate_date):
-        if 'password' in validate_date:
-            instance.set_password(validate_date['password'])
+    def update(self,instance,validated_data):
+        if 'password' in validated_data:
+            instance.set_password(validated_data['password'])
         else:
-            instance = super().update(instance,validated_date)
+            instance = super().update(instance,validated_data)
         instance.save()
         return instance
 
