@@ -14,6 +14,7 @@ from datetime import timedelta
 from django.template.loader import get_template
 from project import settings
 from django.core.mail import send_mail
+from django.db.models import Q
 
 
 class IsOwnerOrReadOnly(permissions.BasePermission):
@@ -53,10 +54,16 @@ class RequestUserPutView(viewsets.ModelViewSet):
 
 
 class LadderViewSet(RequestUserPutView,permissions.BasePermission):
-    queryset = Ladder.objects.all().filter(is_public=True)
     serializer_class = LadderSerializer
     permission_classes = (IsOwnerOrReadOnly,)
     pagenation = (LimitOffsetPagination,)
+
+    def get_queryset(self):
+        if not self.request.user.id == None:
+            queryset = Ladder.objects.all().filter(Q(is_public=True)|Q(user__exact=self.request.user)).distinct()
+        else:
+            queryset = Ladder.objects.all().filter(is_public=True)
+        return queryset
 
     @action(methods=['get'],detail=False)
     def ranking(self,request):
