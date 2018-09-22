@@ -183,21 +183,20 @@ class Ladder(models.Model):
             return next_list
 
     def count_finish_number(self):
-        units_list = self.get_unit()
-        try:
-            unit = units_list[-1]
-            count = 0
-            for ladder in LearningStatus.objects.filter(unit=unit):
-                count += ladder.status
-            return count
-        except:
-            return 0
+        learningstatus = LearningStatus.objects.all().filter(unit__ladder=self).filter(unit__index=1)
+        count = 0
+        for ls in learningstatus:
+            count += self.get_finish(ls.user)
+
+        return count
+
 
     def count_learning_number(self):
         try:
             units_list = self.get_unit()
             first_unit = units_list[0]
-            return LearningStatus.objects.all().filter(unit=first_unit).count()
+            count = LearningStatus.objects.all().filter(unit__ladder=self).distinct('user').count() - self.count_finish_number()
+            return count
         except:
             return 0;
 
