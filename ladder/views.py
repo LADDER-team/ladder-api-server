@@ -124,8 +124,8 @@ class UserViewSet(viewsets.ModelViewSet):
     @action(methods=['get'],detail=True,url_path='learning-ladder')
     def get_learning_ladder(self,request,pk=None):
         ladder_list = []
-        for ls in LearningStatus.objects.all().filter(user=pk):
-            if ls.ladder.get_learning(user=pk) and ls.unit.index == 1:
+        for ls in LearningStatus.objects.all().filter(user=pk,unit__index=1):
+            if ls.ladder.get_learning(user=pk):
                 serializer = LadderSerializer(ls.ladder)
                 ladder_list.append(serializer.data)
 
@@ -134,8 +134,8 @@ class UserViewSet(viewsets.ModelViewSet):
     @action(methods=['get'],detail=True,url_path='finish-ladder')
     def get_finish_ladder(self,request,pk=None):
         ladder_list =[]
-        for ls in LearningStatus.objects.all().filter(user=pk):
-            if ls.ladder.get_finish(user=pk) and ls.unit.index == 1:
+        for ls in LearningStatus.objects.all().filter(user=pk,unit__index=1):
+            if ls.ladder.get_finish(user=pk):
                 serializer = LadderSerializer(ls.ladder)
                 ladder_list.append(serializer.data)
 
