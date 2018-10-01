@@ -30,11 +30,11 @@ class UserSerializer(serializers.ModelSerializer):
         validated_data['password'] = make_password(password)
         return User.objects.create(**validated_data)
 
-    def update(self,instance,validate_data):
-        if 'password' in validate_data:
-            instance.set_password(validate_data['password'])
+    def update(self,instance,validated_data):
+        if 'password' in validated_data:
+            instance.set_password(validated_data['password'])
         else:
-            instance = super().update(instance,validate_data)
+            instance = super().update(instance,validated_data)
         instance.save()
         return instance
 
@@ -51,7 +51,7 @@ class UserSerializer(serializers.ModelSerializer):
         serialize = {}
         list = []
         for ladder in instance.get_my_ladders():
-            serialize = {'id':ladder.pk,'title':ladder.title,'user':ladder.user.name,'created_at':ladder.created_at}
+            serialize = {'id':ladder.pk,'title':ladder.title,'user':ladder.user.name,'created_at':ladder.created_at,'is_public':ladder.is_public}
             list.append(serialize)
         return list
 

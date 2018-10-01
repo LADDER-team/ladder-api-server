@@ -186,18 +186,20 @@ class Ladder(models.Model):
             return next_list
 
     def count_finish_number(self):
-        try:
-            unit_list = self.get_unit()
-            unit = unit_list[-1]
-            return LearningStatus.objects.filter(unit=unit).filter(status=1).count()
-        except:
-            return 0
+        learningstatus = LearningStatus.objects.all().filter(unit__ladder=self).filter(unit__index=1)
+        count = 0
+        for ls in learningstatus:
+            count += self.get_finish(ls.user)
+
+        return count
+
 
     def count_learning_number(self):
         try:
-            unit_list = self.get_unit()
-            first_unit = unit_list[0]
-            return LearningStatus.objects.filter(unit=first_unit).count() - self.count_finish_number()
+            units_list = self.get_unit()
+            first_unit = units_list[0]
+            count = LearningStatus.objects.all().filter(unit__ladder=self).distinct('user').count() - self.count_finish_number()
+            return count
         except:
             return 0
 
@@ -208,6 +210,32 @@ class Ladder(models.Model):
 
     def get_tags(self):
         return Tag.objects.all().filter(ladders=self)
+
+    def get_finish(self,user):
+        units_list = self.get_unit()
+        finish_unit_number = 0
+        learningstatus_list = LearningStatus.objects.all().filter(user=user).filter(unit__ladder=self)
+        for learningstatus in learningstatus_list:
+            finish_unit_number += learningstatus.status
+
+        if finish_unit_number == self.units_number():
+            return 1
+        else:
+            return 0
+
+
+    def get_learning(self,user):
+        try:
+            if self.get_finish(user):
+                return 0
+            else:
+                unit_list = self.get_unit()
+                first_unit = unit_list[0]
+                first_status = LearningStatus.objects.filter(unit=first_unit).filter(user=user)
+            return 1
+        except:
+            return 0
+
 
 
     def get_finish(self,user):
@@ -252,7 +280,7 @@ class Unit(models.Model):
     title = models.CharField('タイトル',max_length=40)
     description = models.TextField('説明文')
     ladder = models.ForeignKey(Ladder,related_name='units',on_delete=models.CASCADE)
-    url = models.URLField('URL')
+    url = models.URLField('URL',max_length=500)
     index = models.PositiveIntegerField('番号')
 
     class Meta:

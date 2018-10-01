@@ -33,7 +33,10 @@ class IsOwnerOrReadOnly(permissions.BasePermission):
     def has_object_permission(self, request, view, obj):
         if request.method in permissions.SAFE_METHODS:
             return True
-        return obj.user == request.user
+        if type(obj) == User:
+            return obj ==request.user
+        else:
+            return obj.user == request.user
 
 
 class RequestUserPutView(viewsets.ModelViewSet):
@@ -67,8 +70,13 @@ class LadderViewSet(RequestUserPutView,permissions.BasePermission):
     pagenation = (LimitOffsetPagination,)
 
     def get_queryset(self):
-        queryset = Ladder.objects.all().filter(is_public=True)
+        if not self.request.user.id == None:
+            queryset = Ladder.objects.all().filter(Q(is_public=True)|Q(user__exact=self.request.user)).distinct()
+        else:
+            queryset = Ladder.objects.all().filter(is_public=True)
+
         params = self.request.query_params.get('q',None)
+
         if params is not None:
             q = parse_params(params)
             query = reduce(operator.and_, (Q(title__icontains=w) | Q(units__description__icontains=w) |Q(units__title__icontains=w) for w in q))
@@ -121,11 +129,12 @@ class UserViewSet(viewsets.ModelViewSet):
 
         return Response(serializer.data, status=status.HTTP_201_CREATED, headers=headers)
 
+
     @action(methods=['get'],detail=True,url_path='learning-ladder')
     def get_learning_ladder(self,request,pk=None):
         ladder_list = []
-        for ls in LearningStatus.objects.all().filter(user=pk,unit__index=1):
-            if ls.ladder.get_learning(user=pk):
+        for ls in LearningStatus.objects.all().filter(user=pk):
+            if ls.ladder.get_learning(user=pk) and ls.unit.index == 1:
                 serializer = LadderSerializer(ls.ladder)
                 ladder_list.append(serializer.data)
 
@@ -134,19 +143,12 @@ class UserViewSet(viewsets.ModelViewSet):
     @action(methods=['get'],detail=True,url_path='finish-ladder')
     def get_finish_ladder(self,request,pk=None):
         ladder_list =[]
-        for ls in LearningStatus.objects.all().filter(user=pk,unit__index=1):
-            if ls.ladder.get_finish(user=pk):
+        for ls in LearningStatus.objects.all().filter(user=pk):
+            if ls.ladder.get_finish(user=pk) and ls.unit.index == 1:
                 serializer = LadderSerializer(ls.ladder)
                 ladder_list.append(serializer.data)
 
         return Response(ladder_list)
-
-    @action(methods=['get'],detail=True,url_path='my-ladder')
-    def get_my_ladders(self,request,pk=None):
-        user = User.objects.get(id=pk)
-        serializer = UserSerializer(user)
-
-        return Response(serializer.data['my_ladders'])
 
     def get_permissions(self):
         if self.action in ('list','retrieve','create'):
@@ -223,9 +225,20 @@ class LinkViewSet(RequestUserPutView):
 
 
 class LearningStatusViewSet(RequestUserPutView):
-    queryset = LearningStatus.objects.all()
     serializer_class = LearningStatusSerializer
     permission_classes = (IsAuthenticatedOrReadOnly,IsOwnerOrReadOnly)
+
+    def get_queryset(self):
+        queryset = LearningStatus.objects.all()
+        user_id = self.request.query_params.get('user',None)
+        ladder_id = self.request.query_params.get('ladder',None)
+
+        if user_id is not None:
+            queryset = queryset.filter(user=user_id)
+        if ladder_id is not None:
+            queryset = queryset.filter(unit__ladder=ladder_id)
+
+        return queryset
 
 
 class CommentViewSet(RequestUserPutView):
