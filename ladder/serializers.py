@@ -2,6 +2,7 @@ from rest_framework import serializers
 
 from .models import Ladder,Unit,User,Link,LearningStatus,Comment,Tag
 from django.contrib.auth.hashers import make_password
+from django.contrib.auth.password_validation import validate_password
 
 
 class TagSerializer(serializers.ModelSerializer):
@@ -151,3 +152,15 @@ class CommentSerializer(serializers.ModelSerializer):
     class Meta:
         model = Comment
         fields = ('id','unit','user','text','target','created_at')
+
+
+class ChangePasswordSerializer(serializers.Serializer):
+    """
+    Serializer for password change endpoint.
+    """
+    old_password = serializers.CharField(required=True)
+    new_password = serializers.CharField(required=True)
+
+    def validate_new_password(self, value):
+        validate_password(value)
+        return value

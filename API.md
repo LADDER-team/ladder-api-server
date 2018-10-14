@@ -717,6 +717,19 @@ tokenのリフレッシュ
 }
 ```
 ---
+### PUT password/change/
+パスワードを変更
+#### 入力
+|JSON key|型|必須|値の説明|
+|:-|-|-|:-|
+|old_password|文字列|○|元のパスワード|
+|new_password|文字列|○|新しいパスワード|
+
+#### 結果
+```
+204 No Content
+```
+
 ### POST password/reset/
 パスワードを忘れた場合のpassword再設定のためのメール送信
 #### 入力
