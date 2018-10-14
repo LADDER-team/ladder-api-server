@@ -110,7 +110,7 @@ class UserViewSet(viewsets.ModelViewSet):
     pagenation = (LimitOffsetPagination,)
 
     def create(self, request, *args, **kwargs):
-        serializer = self.get_serializer(data=request.data)
+        serializer = self.get_serializer(data=request.data,files=request.files)
         serializer.is_valid(raise_exception=True)
         self.perform_create(serializer)
         headers = self.get_success_headers(serializer.data)
