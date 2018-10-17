@@ -141,3 +141,6 @@ MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 MEDIA_URL = '/media/'
 
 ACTIVATION_TIMEOUT_SECONDS = 60*60*24
+
+EMAIL_PASSWORD_RESET_HOST = 'http://localhost:3000/settings/password/reset/complete'
+EMAIL_PROVISIONAL_USER_HOST = 'http://localhost:3000/user/complete'
