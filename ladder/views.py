@@ -111,7 +111,7 @@ class UserViewSet(viewsets.ModelViewSet):
     pagenation = (LimitOffsetPagination,)
 
     def create(self, request, *args, **kwargs):
-        serializer = self.get_serializer(data=request.data,files=request.files)
+        serializer = self.get_serializer(data=request.data,files=request.FILES)
         serializer.is_valid(raise_exception=True)
         self.perform_create(serializer)
         headers = self.get_success_headers(serializer.data)
@@ -129,6 +129,19 @@ class UserViewSet(viewsets.ModelViewSet):
         send_mail(subject,message,from_email,[request.data['email']])
 
         return Response(serializer.data, status=status.HTTP_201_CREATED, headers=headers)
+
+
+    def update(self, request, *args, **kwargs):
+        partial = kwargs.pop('partial', False)
+        instance = self.get_object()
+        serializer = self.get_serializer(instance, data=request.data, file=request.FILES, partial=True)
+        serializer.is_valid(raise_exception=True)
+        self.perform_update(serializer)
+
+        if getattr(instance, '_prefetched_objects_cache', None):
+            instance._prefetched_objects_cache = {}
+
+        return Response(serializer.data)
 
 
     @action(methods=['get'],detail=True,url_path='learning-ladder')
